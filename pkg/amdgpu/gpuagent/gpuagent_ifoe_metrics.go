@@ -796,12 +796,31 @@ func (ga *GPUAgentIFOEClient) PopulateStaticHostLabels() error {
 func (ga *GPUAgentIFOEClient) populateLabelsFromObject(
 	wls map[string]scheduler.Workload,
 	ualStationMap map[string]*amdgpu.UALStation,
-	ualPort *amdgpu.UALNetworkPort,
-	gpuUUID string) map[string]string {
+	ualDevice *amdgpu.UALDevice,
+	populatePlaceholders bool) map[string]string {
 
 	var podInfo scheduler.PodResourceInfo
 
 	labels := make(map[string]string)
+
+	// Pull real values from the UAL device when available; placeholders
+	// remain only for fields the device does not report.
+	var (
+		gpuUUID         string
+		driverVersion   = "driver_version_placeholder"
+		firmwareVersion = "vbios_version_placeholder"
+	)
+	if ualDevice != nil && ualDevice.Status != nil {
+		gpuUUID = utils.UUIDToString(ualDevice.Status.GPU)
+		if ver := ualDevice.Status.Version; ver != nil {
+			if v := ver.UALLibVersion; v != nil {
+				driverVersion = fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch)
+			}
+			if v := ver.FirmwareVersion; v != nil {
+				firmwareVersion = fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch)
+			}
+		}
+	}
 
 	for ckey, enabled := range ga.exportLabels {
 		if !enabled {
@@ -810,59 +829,59 @@ func (ga *GPUAgentIFOEClient) populateLabelsFromObject(
 		key := strings.ToLower(ckey)
 		switch ckey {
 		case exportermetrics.GPUMetricLabel_GPU_UUID.String():
-			if ualPort != nil {
+			if populatePlaceholders {
 				labels[key] = gpuUUID
 			}
 		case exportermetrics.MetricLabel_CARD_SERIES.String():
-			if ualPort != nil {
+			if populatePlaceholders {
 				labels[key] = "card_series_placeholder"
 			}
 		case exportermetrics.MetricLabel_CARD_MODEL.String():
-			if ualPort != nil {
+			if populatePlaceholders {
 				labels[key] = "card_model_placeholder"
 			}
 		case exportermetrics.MetricLabel_CARD_VENDOR.String():
-			if ualPort != nil {
+			if populatePlaceholders {
 				labels[key] = "AMD"
 			}
 		case exportermetrics.MetricLabel_DRIVER_VERSION.String():
-			if ualPort != nil {
-				labels[key] = "driver_version_placeholder"
+			if populatePlaceholders {
+				labels[key] = driverVersion
 			}
 		case exportermetrics.MetricLabel_VBIOS_VERSION.String():
-			if ualPort != nil {
-				labels[key] = "vbios_version_placeholder"
+			if populatePlaceholders {
+				labels[key] = firmwareVersion
 			}
 		case exportermetrics.MetricLabel_POD.String():
-			if ualPort != nil {
+			if populatePlaceholders {
 				labels[key] = "pod_placeholder"
 			}
 		case exportermetrics.MetricLabel_NAMESPACE.String():
-			if ualPort != nil {
+			if populatePlaceholders {
 				labels[key] = "namespace_placeholder"
 			}
 		case exportermetrics.MetricLabel_CONTAINER.String():
-			if ualPort != nil {
+			if populatePlaceholders {
 				labels[key] = "container_placeholder"
 			}
 		case exportermetrics.MetricLabel_JOB_ID.String():
-			if ualPort != nil {
+			if populatePlaceholders {
 				labels[key] = "job_id_placeholder"
 			}
 		case exportermetrics.MetricLabel_JOB_USER.String():
-			if ualPort != nil {
+			if populatePlaceholders {
 				labels[key] = "job_user_placeholder"
 			}
 		case exportermetrics.MetricLabel_JOB_PARTITION.String():
-			if ualPort != nil {
+			if populatePlaceholders {
 				labels[key] = "job_partition_placeholder"
 			}
 		case exportermetrics.MetricLabel_CLUSTER_NAME.String():
-			if ualPort != nil {
+			if populatePlaceholders {
 				labels[key] = "cluster_name_placeholder"
 			}
 		case exportermetrics.MetricLabel_SERIAL_NUMBER.String():
-			if ualPort != nil {
+			if populatePlaceholders {
 				labels[key] = "serial_number_placeholder"
 			}
 		case exportermetrics.MetricLabel_HOSTNAME.String():
@@ -873,7 +892,7 @@ func (ga *GPUAgentIFOEClient) populateLabelsFromObject(
 	}
 
 	// Add extra pod labels only if config has mapped any
-	if ualPort != nil && len(ga.extraPodLabelsMap) > 0 {
+	if populatePlaceholders && len(ga.extraPodLabelsMap) > 0 {
 		podLabels := utils.GetPodLabels(&podInfo, ga.k8PodInfoMap)
 		for prometheusPodlabel, k8Podlabel := range ga.extraPodLabelsMap {
 			label := strings.ToLower(prometheusPodlabel)

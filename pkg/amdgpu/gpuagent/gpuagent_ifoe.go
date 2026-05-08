@@ -219,7 +219,7 @@ func (ga *GPUAgentIFOEClient) updateMetrics() error {
 		// nolint
 		_ = ga.InitClients()
 	}
-	labels := ga.populateLabelsFromObject(nil, nil, nil, "")
+	labels := ga.populateLabelsFromObject(nil, nil, nil, false)
 
 	resp, err := ga.listNetworkPort()
 	if err != nil {
@@ -256,17 +256,13 @@ func (ga *GPUAgentIFOEClient) updateMetrics() error {
 		ualStationMap[uuid] = ualStation
 	}
 
-	devToGPU := make(map[string]string)
+	devMap := make(map[string]*amdgpu.UALDevice)
 	for _, ualDevice := range dresp.Response {
 		if ualDevice.Spec == nil {
 			continue
 		}
 		devUuid := utils.UUIDToString(ualDevice.Spec.Id)
-		gpuUuid := ""
-		if ualDevice.Status != nil {
-			gpuUuid = utils.UUIDToString(ualDevice.Status.GPU)
-		}
-		devToGPU[devUuid] = gpuUuid
+		devMap[devUuid] = ualDevice
 	}
 
 	ga.metrics.totalNetworkPorts.With(labels).Set(float64(len(resp.Response)))
@@ -285,8 +281,7 @@ func (ga *GPUAgentIFOEClient) updateMetrics() error {
 			continue
 		}
 		devUuid := utils.UUIDToString(station.Spec.UALDevice)
-		gpuUuid := devToGPU[devUuid]
-		ifoeLabels := ga.populateLabelsFromObject(nil, nil, ualPort, gpuUuid)
+		ifoeLabels := ga.populateLabelsFromObject(nil, nil, devMap[devUuid], true)
 		// TBD : remove after testing
 		logger.Log.Printf("Processing UALPort: %v, Station: %v Device: %v PortName: %s", portUuid, stationUuid, devUuid, portName)
 
@@ -366,10 +361,9 @@ func (ga *GPUAgentIFOEClient) updateMetrics() error {
 		}
 		stationUuid := utils.UUIDToString(ualStation.Spec.Id)
 		devUuid := utils.UUIDToString(ualStation.Spec.UALDevice)
-		stationLabels := ga.populateLabelsFromObject(nil, nil, nil, "")
+		stationLabels := ga.populateLabelsFromObject(nil, nil, devMap[devUuid], true)
 		stationLabels["station_uuid"] = stationUuid
 		stationLabels["device_uuid"] = devUuid
-		stationLabels[strings.ToLower(exportermetrics.GPUMetricLabel_GPU_UUID.String())] = devToGPU[devUuid]
 
 		stats := ualStation.Stats
 		ga.metrics.stationTxRequestPackets.With(stationLabels).Set(float64(stats.TxRequestPacketCount))

@@ -72,6 +72,14 @@ func (c *ConfigHandler) RefreshConfig() error {
 	return c.runningConfig.Update(newConfig)
 }
 
+// LoadConfig replaces the running config in-memory. Used by tests and
+// any caller that already has a fully-built MetricConfig.
+func (c *ConfigHandler) LoadConfig(cfg *exportermetrics.MetricConfig) error {
+	c.Lock()
+	defer c.Unlock()
+	return c.runningConfig.Update(cfg)
+}
+
 // GetHealthServiceState returns the health service state
 // if not set, it returns true
 // if set, it returns the value

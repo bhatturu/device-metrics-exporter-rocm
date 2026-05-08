@@ -178,7 +178,7 @@ rpmpkg-ual: rpmpkg-ual-clean
 	${MAKE} amdexporter
 	$(rpmpkg-stage-common)
 	@echo "PLATFORM=helios" >> $(RPM_STAGE_DIR)/debian/usr/local/etc/metrics/gpuagent.conf
-	@sed -i 's|ExecStart=/usr/local/bin/amd-metrics-exporter$$|ExecStart=/usr/local/bin/amd-metrics-exporter -monitor-ifoe=true|' \
+	@sed -i 's|ExecStart=/usr/local/bin/amd-metrics-exporter$$|ExecStart=/usr/local/bin/amd-metrics-exporter -monitor-gpu=false -monitor-ifoe=true|' \
 		$(RPM_STAGE_DIR)/debian/usr/lib/systemd/system/amd-metrics-exporter.service
 	$(rpmpkg-finalize)
 
