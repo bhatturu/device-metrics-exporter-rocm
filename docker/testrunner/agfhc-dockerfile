@@ -4,7 +4,7 @@ FROM ${BASE_IMAGE}
 LABEL maintainer="AMD Inc"
 LABEL OS="registry.access.redhat.com/ubi9/ubi:9.6"
 
-ARG AGFHC_VERSION=1.30.0
+ARG AGFHC_VERSION=1.31.2
 ARG ROCM_VERSION=7.2.1
 ARG RADEON_REPO_URL=https://repo.radeon.com
 
