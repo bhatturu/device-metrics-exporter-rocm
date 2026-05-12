@@ -1,7 +1,14 @@
+# Note: markdownlint-cli2's `ignores` field only filters auto-discovered
+# files — it does NOT reliably override explicit positional globs like
+# `markdownlint-cli2 "**/*.md"` (which the Makefile uses). The reliable
+# place to exclude paths is `.markdownlintignore` at the repo root.
+# Keeping these patterns here as a defense-in-depth.
 ignores:
   - "**/CHANGELOG.md"
   - "**/CLAUDE.md"
   - "**/.claude/**"
+  - "**/.codie/**"
+  - "**/docs/design/**"
   - "**/libamdsmi/**"
   - "**/libgimsmi/**"
   - "**/gpuagent/**"

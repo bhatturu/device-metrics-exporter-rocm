@@ -32,8 +32,12 @@
 
 matrix:
 - name: Markdown
+  # Enumerate user-facing doc subdirs explicitly so internal codie-generated
+  # docs (docs/design/**) and sphinx build helpers (docs/sphinx/**) are
+  # excluded — pyspelling's source list has no negative glob, so we list the
+  # includes positively rather than `docs/**/*.md`.
   sources:
-  - ['docs/**/*.md']
+  - ['docs/*.md', 'docs/configuration/**/*.md', 'docs/installation/**/*.md', 'docs/integrations/**/*.md']
   expect_match: false
   aspell:
     lang: en

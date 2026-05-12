@@ -23,3 +23,8 @@ BUILDROOT/*
 .vscode
 .cline_storage
 .vscode
+
+# Per-engineer codie config (absolute paths to local workspace)
+codie-config.yaml
+# Per-session codie progress / handoff files
+PROGRESS-*.md

@@ -53,7 +53,7 @@ log_info "Updating UAL assets to version: ${VERSION}"
 log_info "Remote server: ${REMOTE_SERVER}"
 
 # Construct remote paths
-REMOTE_GPUAGENT_PATH="${REMOTE_BASE_PATH}/${VERSION}/rudra-bundle/internal-artifacts/nodemgmt/mock/gpuagent_${VERSION}.tar.gz"
+REMOTE_GPUAGENT_PATH="${REMOTE_BASE_PATH}/${VERSION}/rudra-bundle/internal-artifacts/nodemgmt/gpuagent_${VERSION}.tar.gz"
 REMOTE_GPUCTL_PATH="${REMOTE_BASE_PATH}/${VERSION}/rudra-bundle/internal-artifacts/nodemgmt/gpuctl_${VERSION}.tar.gz"
 
 # Download gpuagent

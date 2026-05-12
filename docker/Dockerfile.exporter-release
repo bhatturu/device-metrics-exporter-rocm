@@ -28,7 +28,8 @@ RUN microdnf clean all && \
    microdnf update -y && \
    microdnf install -y sudo findutils procps elfutils-libelf cmake kmod file tar \
    libcap-devel amd-smi-lib libdrm-amdgpu vim numactl numactl-libs \
-   hsa-amd-aqlprofile rocprofiler-sdk hip-runtime-amd jq libatomic && \
+   hsa-amd-aqlprofile rocprofiler-sdk hip-runtime-amd jq libatomic \
+   libmnl libnl3 && \
    rm -rf /var/cache/yum && rm -rf /var/cache/dnf && microdnf clean all
 
 
@@ -39,8 +40,8 @@ RUN mkdir -p /home/amd/bin/ /home/amd/lib/ /home/amd/tools/
 
 # override built libraries
 ADD ./librocpclient.so /opt/rocm/lib/librocpclient.so
-ADD ./libamd_smi.so.26.2.1 /home/amd/lib/libamd_smi.so.26.2.1
-RUN cd /home/amd/lib/ && ln -sf libamd_smi.so.26.2.1 libamd_smi.so.26
+ADD ./libamd_smi.so.26.3.0 /home/amd/lib/libamd_smi.so.26.3.0
+RUN cd /home/amd/lib/ && ln -sf libamd_smi.so.26.3.0 libamd_smi.so.26
 
 ADD ./rocpctl /home/amd/bin/rocpctl
 ADD ./gpuctl /home/amd/bin/gpuctl
@@ -62,5 +63,11 @@ LABEL name="amd-device-metrics-exporter" \
     ROCM_VERSION="${ROCM_VERSION}" \
     summary="AMD Device Metrics Exporter enables out-of-the-box metrics collection for AMD GPUs on Kubernetes." \
     description="AMD Device Metrics Exporter enables Prometheus-format metrics collection for AMD GPUs in HPC and AI environments. It provides detailed telemetry including temperature, utilization, memory usage, and power consumption."
+
+# Enable IFOE field exporter by default. Override with -e ENABLE_IFOE=false at
+# `docker run` time. The Go-side capability gate in
+# pkg/amdgpu/gpuagent/gpuagent_ifoe.go gracefully no-ops on hosts without
+# IFOE-capable devices, so existing GPU-only customers see no regression.
+ENV ENABLE_IFOE=true
 
 ENTRYPOINT ["/home/amd/tools/entrypoint.sh"]

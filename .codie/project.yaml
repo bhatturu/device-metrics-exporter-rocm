@@ -1,0 +1,29 @@
+name: device-metrics-exporter
+description: "AMD Device Metrics Exporter — Prometheus-format metrics for AMD GPUs and Pensando IFOE NICs (UAL field exporter, deb/rpm/container)"
+
+epic_url: https://pensando.atlassian.net/browse/GPUOP-722
+
+repos:
+  device-metrics-exporter:
+    paths:
+      - .
+    knowledge_files:
+      - README.md
+      - docs/developerguide.md
+      - docs/full-build-instructions.md
+      - docs/installation/docker.md
+      - docs/configuration/docker.md
+      - .claude/skills/test-port-allocation.md
+      - .claude/skills/build-ual-rpm.md
+      - .claude/commands/validate-ifoe-exporter.md
+
+# Skill resolution falls back to {project_dir}/skills/<action>.md when an
+# action is not mapped here. We rely on that fallback so all engineers share
+# the same in-repo skill files (.codie/skills/) — no per-engineer absolute
+# paths in this committed file.
+#
+# Available skills (auto-resolved from .codie/skills/<action>.md):
+#   - run-tests: make unit-test (see .codie/skills/run-tests.md)
+
+kb_review_repo_url: https://github.com/pensando/ntsg_kb_review
+debug_plugin_repo_url: https://github.com/pensando/ntsg_claude_plugins

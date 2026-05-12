@@ -40,6 +40,31 @@ curl http://localhost:5000/metrics
 
 For information about custom metrics, see [Standalone Container](../configuration/docker.md) for instructions.
 
+## IFOE field exporter
+
+The container ships with the IFOE field exporter enabled by default
+(`ENABLE_IFOE=true`). On hosts with Pensando IFOE-capable hardware,
+IFOE port/station/device metrics are published to `/metrics` alongside
+the standard GPU metrics. On hosts without IFOE-capable hardware, the
+exporter detects the absence at startup, logs a single "IFOE disabled"
+message, and publishes only the standard GPU metrics — existing GPU-only
+deployments see no regression.
+
+To explicitly disable IFOE, override the env var:
+
+```bash
+docker run -d \
+  --device=/dev/dri \
+  --device=/dev/kfd \
+  -v /sys:/sys:ro \
+  -p 5000:5000 \
+  -e ENABLE_IFOE=false \
+  --name device-metrics-exporter \
+  rocm/device-metrics-exporter:v1.5.0
+```
+
+For the full IFOE metric list, see [IFOE Metrics](../configuration/ifoe-metricslist.md).
+
 ## Service Management for Driver and Partition Operations
 
 The Device Metrics Exporter must be stopped before performing the following operations:

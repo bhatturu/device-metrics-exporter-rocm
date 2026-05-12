@@ -10,7 +10,7 @@ targets:
     build-dependencies:
     - build-debian-package-ub22.04
     - build-debian-package-ub24.04
-    #- build-device-metrics-exporter-docker-ubi9.6
+    - build-device-metrics-exporter-docker-ubi9.6
     #- build-device-metrics-exporter-docker-sriov-ubi9.6
     #- build-device-metrics-exporter-docker-ainic-ubi9.6
     - build-rpm-package-rhel9

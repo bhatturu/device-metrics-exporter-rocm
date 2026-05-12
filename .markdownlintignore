@@ -1,0 +1,36 @@
+# markdownlint-cli2 honors this file at the repo root before
+# applying glob arguments — anything matched here is dropped from
+# the lint set even if explicit globs include it. This is the
+# reliable way to exclude paths; the `ignores` field in
+# .markdownlint-cli2.yaml only filters auto-discovered files.
+
+# Auto-generated / vendored content
+vendor/
+libamdsmi/
+libgimsmi/
+gpuagent/
+
+# Out-of-tree submodules / mirrored repos
+tools/
+
+# Repo-level docs not part of the docs/ build
+README.md
+CHANGELOG.md
+helm-charts/README.md
+grafana/README.md
+
+# Claude / agent / codie pipeline artifacts (no user-facing prose)
+CLAUDE.md
+.claude/
+.codie/
+
+# Internal codie-generated design + test-plan + test-result files —
+# agent-pipeline artifacts, not user docs. See CLAUDE.md
+# §"Claude / agent shared knowledge in repo".
+docs/design/
+
+# Internal metrics map (auto-generated table)
+internal/
+
+# Build/output trees
+build/

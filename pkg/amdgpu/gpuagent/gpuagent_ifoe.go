@@ -47,6 +47,14 @@ type GPUAgentIFOEClient struct {
 	fieldMetricsMap        map[string]FieldMeta
 	staticHostLabels       map[string]string
 	podInfoEnabled         bool
+
+	// Capability gate (GPUOP-736): when gpuagent reports zero IFOE devices,
+	// the client permanently disables itself for the rest of the process
+	// lifetime — subsequent updateMetrics calls short-circuit, no IFOE metric
+	// series are published, and the structured "IFOE disabled" log fires
+	// exactly once.
+	disabled     bool
+	disabledOnce sync.Once
 }
 
 func NewGPUAgentIFOEClient(gpuHandler *GPUAgentClient) (*GPUAgentIFOEClient, error) {
@@ -215,6 +223,17 @@ func (ga *GPUAgentIFOEClient) listDevice() (*amdgpu.UALDeviceGetResponse, error)
 }
 
 func (ga *GPUAgentIFOEClient) updateMetrics() error {
+	// Capability gate: once we've determined the host has no IFOE-capable
+	// devices, short-circuit subsequent polls for the rest of the process
+	// lifetime. The "IFOE disabled" log already fired exactly once below
+	// when we first observed zero devices.
+	ga.Lock()
+	disabled := ga.disabled
+	ga.Unlock()
+	if disabled {
+		return nil
+	}
+
 	if !ga.isActive() {
 		// nolint
 		_ = ga.InitClients()
@@ -239,6 +258,22 @@ func (ga *GPUAgentIFOEClient) updateMetrics() error {
 		ga.metrics.totalDevices.With(labels).Set(float64(0))
 		logger.Log.Printf("UALDeviceGet api status :%v", dresp.ApiStatus)
 		return fmt.Errorf("UALDeviceGet api status: %v", dresp.ApiStatus)
+	}
+
+	// Capability check: if gpuagent reports zero IFOE devices, this host
+	// has no IFOE-capable hardware. Disable IFOE for the process lifetime
+	// — log once with reason, publish no metric series, and short-circuit
+	// future polls. Distinct from the gRPC-error path above (where we'd
+	// want to retry on transient failures); this is a positive "no devices"
+	// answer and won't change without a process restart.
+	if dresp == nil || len(dresp.Response) == 0 {
+		ga.disabledOnce.Do(func() {
+			logger.Log.Printf("IFOE disabled: gpuagent reported zero IFOE-capable devices (UALDeviceGet returned empty response). No IFOE metrics will be published; subsequent scrape polls will short-circuit. This is the expected behavior on hosts without Pensando IFOE hardware.")
+		})
+		ga.Lock()
+		ga.disabled = true
+		ga.Unlock()
+		return nil
 	}
 
 	sresp, err := ga.listStation()

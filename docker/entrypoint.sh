@@ -21,14 +21,44 @@ set -euo pipefail
 # default is gpu monitoring enabled
 MONITOR_GPU="true"
 
-# Loop through all arguments
+# IFOE field-exporter default. Overridable via ENABLE_IFOE env (true|false)
+# or via explicit -monitor-ifoe= CLI arg (CLI wins). The Go-side capability
+# gate in pkg/amdgpu/gpuagent/gpuagent_ifoe.go gracefully no-ops on hosts
+# without IFOE-capable devices, so existing GPU-only customers see no regression.
+DEFAULT_ENABLE_IFOE="${ENABLE_IFOE:-true}"
+case "$DEFAULT_ENABLE_IFOE" in
+  true|false) ;;
+  *)
+    echo "WARN: invalid ENABLE_IFOE='$DEFAULT_ENABLE_IFOE' (expected true|false); defaulting to true" >&2
+    DEFAULT_ENABLE_IFOE="true"
+    ;;
+esac
+
+# Loop through all arguments — capture monitor-gpu state and detect whether
+# the user explicitly supplied -monitor-ifoe= (their flag wins over the env).
+USER_SET_MONITOR_IFOE=0
 for arg in "$@"; do
   case $arg in
     -monitor-gpu=*)
       MONITOR_GPU="${arg#*=}"   # Extract value after '='
       ;;
+    -monitor-ifoe=*)
+      USER_SET_MONITOR_IFOE=1
+      ;;
   esac
 done
+
+# Build the final exporter argument list — pass through user args verbatim,
+# then append our env-derived -monitor-ifoe only if the user didn't set it.
+# Note: ARGS=("$@") + later access via "${ARGS[@]+"${ARGS[@]}"}" is the
+# bash-3/4 safe form when the array may be empty under `set -u`.
+ARGS=()
+if [ "$#" -gt 0 ]; then
+  ARGS=("$@")
+fi
+if [ "$USER_SET_MONITOR_IFOE" -eq 0 ]; then
+  ARGS+=("-monitor-ifoe=${DEFAULT_ENABLE_IFOE}")
+fi
 
 if [ "$MONITOR_GPU" == "true" ]; then
   LD_PRELOAD=/home/amd/lib/libamd_smi.so.26 /home/amd/bin/gpuagent -s /var/run/gpuagent.sock &
@@ -39,4 +69,4 @@ fi
 
 # start exporter
 # Run the underlying binary with all arguments passed to the script
-exec /home/amd/bin/server "$@"
+exec /home/amd/bin/server "${ARGS[@]}"

@@ -35,11 +35,23 @@ elif [ "$SRIOV" == "1" ]; then
     echo "Copying sriov gim driver gpuagent to docker"
     tar -xf $TOP_DIR/assets/gpuagent_sriov_static.bin.gz -C $TOP_DIR/docker/
 else
+    # GPUOP-723: container ships the UAL/IFOE-aware gpuagent by default
+    # (UAL defaults to 1 if unset). The Go capability gate in
+    # pkg/amdgpu/gpuagent/gpuagent_ifoe.go gracefully no-ops on hosts
+    # without IFOE-capable hardware so existing GPU-only customers see
+    # no regression. Override with `UAL=0 make ...` to fall back to the
+    # non-IFOE prebuilt (gpuagent_static.bin.gz) — useful for debugging
+    # libamd_smi ABI compat against the older prebuilt or SKUs that
+    # explicitly should not ship UAL.
+    UAL="${UAL:-1}"
     if [ -f $TOP_DIR/build/assets/gpuagent ]; then
         echo "Copying newly built gpuagent to docker"
         cp -vf $TOP_DIR/build/assets/gpuagent $TOP_DIR/docker/
+    elif [ "$UAL" == "1" ] && [ -f $TOP_DIR/assets/gpuagent_ual.bin.gz ]; then
+        echo "Copying UAL/IFOE prebuilt gpuagent to docker (GPUOP-723 default; UAL=1)"
+        tar -xf $TOP_DIR/assets/gpuagent_ual.bin.gz -C $TOP_DIR/docker/
     else
-        echo "Copying prebuilt gpuagent to docker"
+        echo "Copying non-IFOE prebuilt gpuagent to docker (UAL=$UAL)"
         tar -xf $TOP_DIR/assets/gpuagent_static.bin.gz -C $TOP_DIR/docker/
     fi
 fi
