@@ -42,7 +42,7 @@ copy_artifacts () {
       DEBIAN_VERSION="${tag#v}"
     fi
     # # copy docker image ubi9.4
-    # cp /device-metrics-exporter/docker/device-metrics-exporter-latest.tar.gz $BUNDLE_DIR/device-metrics-exporter-latest-$RELEASE.tar.gz
+    cp /device-metrics-exporter/docker/device-metrics-exporter-latest.tar.gz $BUNDLE_DIR/device-metrics-exporter-latest-$RELEASE.tar.gz
     # # copy docker image ubi9.4
     # cp /device-metrics-exporter/docker/device-metrics-exporter-sriov-latest.tar.gz $BUNDLE_DIR/device-metrics-exporter-sriov-latest-$RELEASE.tar.gz
     # # copy docker image ubi9.6
