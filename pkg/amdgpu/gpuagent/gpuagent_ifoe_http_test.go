@@ -17,6 +17,7 @@
 package gpuagent
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -85,7 +86,7 @@ func TestGPUAgentIFOEMetricsHTTP(t *testing.T) {
 	// prometheus registry but no goroutines fan out yet (mh.clients is
 	// still empty). RefreshConfig fails on the empty path; that is fine
 	// because LoadConfig below puts the real config in place.
-	mh.InitConfig()
+	mh.InitConfig(context.Background())
 
 	ifoeCfg := &exportermetrics.IFOEMetricConfig{
 		// Enable 6 non-mandatory labels on top of HOSTNAME + GPU_UUID.
@@ -141,7 +142,7 @@ func TestGPUAgentIFOEMetricsHTTP(t *testing.T) {
 				t.Fatalf("UpdateStaticMetrics panicked (cardinality regression?): %v", r)
 			}
 		}()
-		assert.NilError(t, ifoeClient.UpdateStaticMetrics())
+		assert.NilError(t, ifoeClient.UpdateStaticMetrics(context.Background()))
 	}()
 
 	// Integration HTTP path. Mirrors the production /metrics route
