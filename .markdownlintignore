@@ -27,7 +27,7 @@ CLAUDE.md
 # Internal codie-generated design + test-plan + test-result files —
 # agent-pipeline artifacts, not user docs. See CLAUDE.md
 # §"Claude / agent shared knowledge in repo".
-docs/design/
+docs/design/**
 
 # Internal metrics map (auto-generated table)
 internal/

@@ -231,7 +231,6 @@ func (ga *GPUAgentIFOEClient) updateMetrics(ctx context.Context) error {
 		return nil
 	}
 
-
 	if !ga.isActive() {
 		// nolint
 		_ = ga.InitClients()
