@@ -363,3 +363,11 @@ func GetDRAKey(gpuCardId, gpuRenderId string) string {
 	}
 	return ""
 }
+
+// IsEventsDisabled returns true when GPU event collection is disabled via env var.
+func IsEventsDisabled() bool {
+	if os.Getenv("GPUAGENT_EVENTS_DISABLE") == "1" {
+		return true
+	}
+	return IsSimEnabled()
+}
