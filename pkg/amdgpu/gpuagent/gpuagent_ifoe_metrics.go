@@ -106,6 +106,21 @@ type IFOEMetrics struct {
 	txLLRReplaysCompleted     prometheus.GaugeVec
 	rxLLRBadPackets           prometheus.GaugeVec
 	rxLLRDuplSeqPackets       prometheus.GaugeVec
+	// IFOE per-lane FEC and error counters (port-level)
+	rxFECBitErr0To1Lane0     prometheus.GaugeVec
+	rxFECBitErr0To1Lane1     prometheus.GaugeVec
+	rxFECBitErr0To1Lane2     prometheus.GaugeVec
+	rxFECBitErr0To1Lane3     prometheus.GaugeVec
+	rxFECBitErr1To0Lane0     prometheus.GaugeVec
+	rxFECBitErr1To0Lane1     prometheus.GaugeVec
+	rxFECBitErr1To0Lane2     prometheus.GaugeVec
+	rxFECBitErr1To0Lane3     prometheus.GaugeVec
+	rxFECSymbolErrCountLane0 prometheus.GaugeVec
+	rxFECSymbolErrCountLane1 prometheus.GaugeVec
+	rxFECSymbolErrCountLane2 prometheus.GaugeVec
+	rxFECSymbolErrCountLane3 prometheus.GaugeVec
+	rxBadCodeCount           prometheus.GaugeVec
+	rxStompedFCS             prometheus.GaugeVec
 
 	// IFOE device stats
 	totalDevices prometheus.GaugeVec
@@ -122,6 +137,15 @@ type IFOEMetrics struct {
 	stationStreamRemapsNetworkPort1 prometheus.GaugeVec
 	stationStreamRemapsNetworkPort2 prometheus.GaugeVec
 	stationStreamRemapsNetworkPort3 prometheus.GaugeVec
+	// IFOE crypto key update counters (station-level)
+	stationCryptoTxKeyUpdatesSA0  prometheus.GaugeVec
+	stationCryptoRxKey0UpdatesSA0 prometheus.GaugeVec
+	stationCryptoRxKey1UpdatesSA0 prometheus.GaugeVec
+	stationCryptoRxKeyDisablesSA0 prometheus.GaugeVec
+	stationCryptoTxKeyUpdatesSA1  prometheus.GaugeVec
+	stationCryptoRxKey0UpdatesSA1 prometheus.GaugeVec
+	stationCryptoRxKey1UpdatesSA1 prometheus.GaugeVec
+	stationCryptoRxKeyDisablesSA1 prometheus.GaugeVec
 }
 
 func GetIFOEMandatoryLabels() []string {
@@ -636,6 +660,90 @@ func (ga *GPUAgentIFOEClient) initPrometheusMetrics() {
 				Help: "Count of duplicate sequence number LLR packets received",
 			},
 			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+		rxFECBitErr0To1Lane0: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_rx_fec_bit_err_0to1_lane0",
+				Help: "FEC bit error 0-to-1 count on lane 0",
+			},
+			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+		rxFECBitErr0To1Lane1: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_rx_fec_bit_err_0to1_lane1",
+				Help: "FEC bit error 0-to-1 count on lane 1",
+			},
+			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+		rxFECBitErr0To1Lane2: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_rx_fec_bit_err_0to1_lane2",
+				Help: "FEC bit error 0-to-1 count on lane 2",
+			},
+			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+		rxFECBitErr0To1Lane3: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_rx_fec_bit_err_0to1_lane3",
+				Help: "FEC bit error 0-to-1 count on lane 3",
+			},
+			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+		rxFECBitErr1To0Lane0: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_rx_fec_bit_err_1to0_lane0",
+				Help: "FEC bit error 1-to-0 count on lane 0",
+			},
+			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+		rxFECBitErr1To0Lane1: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_rx_fec_bit_err_1to0_lane1",
+				Help: "FEC bit error 1-to-0 count on lane 1",
+			},
+			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+		rxFECBitErr1To0Lane2: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_rx_fec_bit_err_1to0_lane2",
+				Help: "FEC bit error 1-to-0 count on lane 2",
+			},
+			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+		rxFECBitErr1To0Lane3: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_rx_fec_bit_err_1to0_lane3",
+				Help: "FEC bit error 1-to-0 count on lane 3",
+			},
+			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+		rxFECSymbolErrCountLane0: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_rx_fec_symbol_err_count_lane0",
+				Help: "FEC symbol error count on lane 0",
+			},
+			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+		rxFECSymbolErrCountLane1: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_rx_fec_symbol_err_count_lane1",
+				Help: "FEC symbol error count on lane 1",
+			},
+			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+		rxFECSymbolErrCountLane2: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_rx_fec_symbol_err_count_lane2",
+				Help: "FEC symbol error count on lane 2",
+			},
+			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+		rxFECSymbolErrCountLane3: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_rx_fec_symbol_err_count_lane3",
+				Help: "FEC symbol error count on lane 3",
+			},
+			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+		rxBadCodeCount: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_rx_bad_code_count",
+				Help: "Count of bad code received on the UAL network port",
+			},
+			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+		rxStompedFCS: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_rx_stomped_fcs",
+				Help: "Count of stomped FCS received on the UAL network port",
+			},
+			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
 		stationStreamRemapsNetworkPort0: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_stream_remaps_network_port0",
@@ -658,6 +766,54 @@ func (ga *GPUAgentIFOEClient) initPrometheusMetrics() {
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_stream_remaps_network_port3",
 				Help: "Count of streams remapped on network port 3 of the UAL station",
+			},
+			append([]string{"station_uuid", "device_uuid"}, labels...)),
+		stationCryptoTxKeyUpdatesSA0: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_station_crypto_tx_key_updates_sa0",
+				Help: "Crypto TX key updates for SA0 on the UAL station",
+			},
+			append([]string{"station_uuid", "device_uuid"}, labels...)),
+		stationCryptoRxKey0UpdatesSA0: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_station_crypto_rx_key0_updates_sa0",
+				Help: "Crypto RX key0 updates for SA0 on the UAL station",
+			},
+			append([]string{"station_uuid", "device_uuid"}, labels...)),
+		stationCryptoRxKey1UpdatesSA0: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_station_crypto_rx_key1_updates_sa0",
+				Help: "Crypto RX key1 updates for SA0 on the UAL station",
+			},
+			append([]string{"station_uuid", "device_uuid"}, labels...)),
+		stationCryptoRxKeyDisablesSA0: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_station_crypto_rx_key_disables_sa0",
+				Help: "Crypto RX key disables for SA0 on the UAL station",
+			},
+			append([]string{"station_uuid", "device_uuid"}, labels...)),
+		stationCryptoTxKeyUpdatesSA1: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_station_crypto_tx_key_updates_sa1",
+				Help: "Crypto TX key updates for SA1 on the UAL station",
+			},
+			append([]string{"station_uuid", "device_uuid"}, labels...)),
+		stationCryptoRxKey0UpdatesSA1: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_station_crypto_rx_key0_updates_sa1",
+				Help: "Crypto RX key0 updates for SA1 on the UAL station",
+			},
+			append([]string{"station_uuid", "device_uuid"}, labels...)),
+		stationCryptoRxKey1UpdatesSA1: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_station_crypto_rx_key1_updates_sa1",
+				Help: "Crypto RX key1 updates for SA1 on the UAL station",
+			},
+			append([]string{"station_uuid", "device_uuid"}, labels...)),
+		stationCryptoRxKeyDisablesSA1: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Name: "ifoe_station_crypto_rx_key_disables_sa1",
+				Help: "Crypto RX key disables for SA1 on the UAL station",
 			},
 			append([]string{"station_uuid", "device_uuid"}, labels...)),
 	}
@@ -737,6 +893,28 @@ func (ga *GPUAgentIFOEClient) initFieldMetricsMap() {
 		exportermetrics.IFOEMetricField_IFOE_STATION_STREAM_REMAPS_NETWORK_PORT1.String():      FieldMeta{Metric: ga.metrics.stationStreamRemapsNetworkPort1},
 		exportermetrics.IFOEMetricField_IFOE_STATION_STREAM_REMAPS_NETWORK_PORT2.String():      FieldMeta{Metric: ga.metrics.stationStreamRemapsNetworkPort2},
 		exportermetrics.IFOEMetricField_IFOE_STATION_STREAM_REMAPS_NETWORK_PORT3.String():      FieldMeta{Metric: ga.metrics.stationStreamRemapsNetworkPort3},
+		exportermetrics.IFOEMetricField_IFOE_RX_FEC_BIT_ERR_0TO1_LANE0.String():                FieldMeta{Metric: ga.metrics.rxFECBitErr0To1Lane0},
+		exportermetrics.IFOEMetricField_IFOE_RX_FEC_BIT_ERR_0TO1_LANE1.String():                FieldMeta{Metric: ga.metrics.rxFECBitErr0To1Lane1},
+		exportermetrics.IFOEMetricField_IFOE_RX_FEC_BIT_ERR_0TO1_LANE2.String():                FieldMeta{Metric: ga.metrics.rxFECBitErr0To1Lane2},
+		exportermetrics.IFOEMetricField_IFOE_RX_FEC_BIT_ERR_0TO1_LANE3.String():                FieldMeta{Metric: ga.metrics.rxFECBitErr0To1Lane3},
+		exportermetrics.IFOEMetricField_IFOE_RX_FEC_BIT_ERR_1TO0_LANE0.String():                FieldMeta{Metric: ga.metrics.rxFECBitErr1To0Lane0},
+		exportermetrics.IFOEMetricField_IFOE_RX_FEC_BIT_ERR_1TO0_LANE1.String():                FieldMeta{Metric: ga.metrics.rxFECBitErr1To0Lane1},
+		exportermetrics.IFOEMetricField_IFOE_RX_FEC_BIT_ERR_1TO0_LANE2.String():                FieldMeta{Metric: ga.metrics.rxFECBitErr1To0Lane2},
+		exportermetrics.IFOEMetricField_IFOE_RX_FEC_BIT_ERR_1TO0_LANE3.String():                FieldMeta{Metric: ga.metrics.rxFECBitErr1To0Lane3},
+		exportermetrics.IFOEMetricField_IFOE_RX_FEC_SYMBOL_ERR_COUNT_LANE0.String():            FieldMeta{Metric: ga.metrics.rxFECSymbolErrCountLane0},
+		exportermetrics.IFOEMetricField_IFOE_RX_FEC_SYMBOL_ERR_COUNT_LANE1.String():            FieldMeta{Metric: ga.metrics.rxFECSymbolErrCountLane1},
+		exportermetrics.IFOEMetricField_IFOE_RX_FEC_SYMBOL_ERR_COUNT_LANE2.String():            FieldMeta{Metric: ga.metrics.rxFECSymbolErrCountLane2},
+		exportermetrics.IFOEMetricField_IFOE_RX_FEC_SYMBOL_ERR_COUNT_LANE3.String():            FieldMeta{Metric: ga.metrics.rxFECSymbolErrCountLane3},
+		exportermetrics.IFOEMetricField_IFOE_RX_BAD_CODE_COUNT.String():                        FieldMeta{Metric: ga.metrics.rxBadCodeCount},
+		exportermetrics.IFOEMetricField_IFOE_RX_STOMPED_FCS.String():                           FieldMeta{Metric: ga.metrics.rxStompedFCS},
+		exportermetrics.IFOEMetricField_IFOE_STATION_CRYPTO_TX_KEY_UPDATES_SA0.String():        FieldMeta{Metric: ga.metrics.stationCryptoTxKeyUpdatesSA0},
+		exportermetrics.IFOEMetricField_IFOE_STATION_CRYPTO_RX_KEY0_UPDATES_SA0.String():       FieldMeta{Metric: ga.metrics.stationCryptoRxKey0UpdatesSA0},
+		exportermetrics.IFOEMetricField_IFOE_STATION_CRYPTO_RX_KEY1_UPDATES_SA0.String():       FieldMeta{Metric: ga.metrics.stationCryptoRxKey1UpdatesSA0},
+		exportermetrics.IFOEMetricField_IFOE_STATION_CRYPTO_RX_KEY_DISABLES_SA0.String():       FieldMeta{Metric: ga.metrics.stationCryptoRxKeyDisablesSA0},
+		exportermetrics.IFOEMetricField_IFOE_STATION_CRYPTO_TX_KEY_UPDATES_SA1.String():        FieldMeta{Metric: ga.metrics.stationCryptoTxKeyUpdatesSA1},
+		exportermetrics.IFOEMetricField_IFOE_STATION_CRYPTO_RX_KEY0_UPDATES_SA1.String():       FieldMeta{Metric: ga.metrics.stationCryptoRxKey0UpdatesSA1},
+		exportermetrics.IFOEMetricField_IFOE_STATION_CRYPTO_RX_KEY1_UPDATES_SA1.String():       FieldMeta{Metric: ga.metrics.stationCryptoRxKey1UpdatesSA1},
+		exportermetrics.IFOEMetricField_IFOE_STATION_CRYPTO_RX_KEY_DISABLES_SA1.String():       FieldMeta{Metric: ga.metrics.stationCryptoRxKeyDisablesSA1},
 	}
 }
 

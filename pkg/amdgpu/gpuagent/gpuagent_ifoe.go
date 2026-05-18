@@ -384,6 +384,20 @@ func (ga *GPUAgentIFOEClient) updateMetrics(ctx context.Context) error {
 			ga.metrics.txLLRReplaysCompleted.With(ifoeLabels).Set(float64(stats.TxLLRReplaysCompleted))
 			ga.metrics.rxLLRBadPackets.With(ifoeLabels).Set(float64(stats.RxLLRBadPackets))
 			ga.metrics.rxLLRDuplSeqPackets.With(ifoeLabels).Set(float64(stats.RxLLRDuplSeqPackets))
+			ga.metrics.rxFECBitErr0To1Lane0.With(ifoeLabels).Set(float64(stats.RxFECBitErr0To1Lane0))
+			ga.metrics.rxFECBitErr0To1Lane1.With(ifoeLabels).Set(float64(stats.RxFECBitErr0To1Lane1))
+			ga.metrics.rxFECBitErr0To1Lane2.With(ifoeLabels).Set(float64(stats.RxFECBitErr0To1Lane2))
+			ga.metrics.rxFECBitErr0To1Lane3.With(ifoeLabels).Set(float64(stats.RxFECBitErr0To1Lane3))
+			ga.metrics.rxFECBitErr1To0Lane0.With(ifoeLabels).Set(float64(stats.RxFECBitErr1To0Lane0))
+			ga.metrics.rxFECBitErr1To0Lane1.With(ifoeLabels).Set(float64(stats.RxFECBitErr1To0Lane1))
+			ga.metrics.rxFECBitErr1To0Lane2.With(ifoeLabels).Set(float64(stats.RxFECBitErr1To0Lane2))
+			ga.metrics.rxFECBitErr1To0Lane3.With(ifoeLabels).Set(float64(stats.RxFECBitErr1To0Lane3))
+			ga.metrics.rxFECSymbolErrCountLane0.With(ifoeLabels).Set(float64(stats.RxFECSymbolErrCountLane0))
+			ga.metrics.rxFECSymbolErrCountLane1.With(ifoeLabels).Set(float64(stats.RxFECSymbolErrCountLane1))
+			ga.metrics.rxFECSymbolErrCountLane2.With(ifoeLabels).Set(float64(stats.RxFECSymbolErrCountLane2))
+			ga.metrics.rxFECSymbolErrCountLane3.With(ifoeLabels).Set(float64(stats.RxFECSymbolErrCountLane3))
+			ga.metrics.rxBadCodeCount.With(ifoeLabels).Set(float64(stats.RxBadCodeCount))
+			ga.metrics.rxStompedFCS.With(ifoeLabels).Set(float64(stats.RxStompedFCS))
 		}
 	}
 
@@ -408,6 +422,14 @@ func (ga *GPUAgentIFOEClient) updateMetrics(ctx context.Context) error {
 		ga.metrics.stationStreamRemapsNetworkPort1.With(stationLabels).Set(float64(stats.StreamRemapsNetworkPort1))
 		ga.metrics.stationStreamRemapsNetworkPort2.With(stationLabels).Set(float64(stats.StreamRemapsNetworkPort2))
 		ga.metrics.stationStreamRemapsNetworkPort3.With(stationLabels).Set(float64(stats.StreamRemapsNetworkPort3))
+		ga.metrics.stationCryptoTxKeyUpdatesSA0.With(stationLabels).Set(float64(stats.CryptoTxKeyUpdatesSA0))
+		ga.metrics.stationCryptoRxKey0UpdatesSA0.With(stationLabels).Set(float64(stats.CryptoRxKey0UpdatesSA0))
+		ga.metrics.stationCryptoRxKey1UpdatesSA0.With(stationLabels).Set(float64(stats.CryptoRxKey1UpdatesSA0))
+		ga.metrics.stationCryptoRxKeyDisablesSA0.With(stationLabels).Set(float64(stats.CryptoRxKeyDisablesSA0))
+		ga.metrics.stationCryptoTxKeyUpdatesSA1.With(stationLabels).Set(float64(stats.CryptoTxKeyUpdatesSA1))
+		ga.metrics.stationCryptoRxKey0UpdatesSA1.With(stationLabels).Set(float64(stats.CryptoRxKey0UpdatesSA1))
+		ga.metrics.stationCryptoRxKey1UpdatesSA1.With(stationLabels).Set(float64(stats.CryptoRxKey1UpdatesSA1))
+		ga.metrics.stationCryptoRxKeyDisablesSA1.With(stationLabels).Set(float64(stats.CryptoRxKeyDisablesSA1))
 	}
 	return nil
 }

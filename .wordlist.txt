@@ -320,4 +320,9 @@ GPU's
 PMFW
 SMU
 env
+Crypto
+CRYPTO
+Gbps
+LLR
+MSEC
 Pensando

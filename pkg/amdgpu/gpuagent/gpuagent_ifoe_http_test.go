@@ -179,15 +179,50 @@ func TestGPUAgentIFOEMetricsHTTP(t *testing.T) {
 	requireSubstring(t, body, "ifoe_station_stream_remaps_total{")
 	requireSubstring(t, body, "ifoe_station_paused_streams_count{")
 	requireSubstring(t, body, "ifoe_station_stream_remaps_network_port0{")
+	requireSubstring(t, body, "ifoe_station_crypto_tx_key_updates_sa0{")
+	requireSubstring(t, body, "ifoe_station_crypto_rx_key0_updates_sa0{")
+	requireSubstring(t, body, "ifoe_station_crypto_rx_key1_updates_sa0{")
+	requireSubstring(t, body, "ifoe_station_crypto_rx_key_disables_sa0{")
+	requireSubstring(t, body, "ifoe_station_crypto_tx_key_updates_sa1{")
+	requireSubstring(t, body, "ifoe_station_crypto_rx_key0_updates_sa1{")
+	requireSubstring(t, body, "ifoe_station_crypto_rx_key1_updates_sa1{")
+	requireSubstring(t, body, "ifoe_station_crypto_rx_key_disables_sa1{")
 
 	// The dummy station Tx/Rx values must reach the wire.
 	requireSubstring(t, body, "} 1001")
 	requireSubstring(t, body, "} 1002")
+	// Crypto key update values (SA0: 77-80, SA1: 81-84).
+	requireSubstring(t, body, "} 77")
+	requireSubstring(t, body, "} 80")
+	requireSubstring(t, body, "} 81")
+	requireSubstring(t, body, "} 84")
 
 	// Port-loop series + port_name label.
 	requireSubstring(t, body, "ifoe_port_link_state{")
 	requireSubstring(t, body, "ifoe_num_failedover_streams{")
 	requireSubstring(t, body, `port_name="ual-port-1"`)
+
+	// All 14 per-lane FEC and error counter metrics.
+	requireSubstring(t, body, "ifoe_rx_fec_bit_err_0to1_lane0{")
+	requireSubstring(t, body, "ifoe_rx_fec_bit_err_0to1_lane1{")
+	requireSubstring(t, body, "ifoe_rx_fec_bit_err_0to1_lane2{")
+	requireSubstring(t, body, "ifoe_rx_fec_bit_err_0to1_lane3{")
+	requireSubstring(t, body, "ifoe_rx_fec_bit_err_1to0_lane0{")
+	requireSubstring(t, body, "ifoe_rx_fec_bit_err_1to0_lane1{")
+	requireSubstring(t, body, "ifoe_rx_fec_bit_err_1to0_lane2{")
+	requireSubstring(t, body, "ifoe_rx_fec_bit_err_1to0_lane3{")
+	requireSubstring(t, body, "ifoe_rx_fec_symbol_err_count_lane0{")
+	requireSubstring(t, body, "ifoe_rx_fec_symbol_err_count_lane1{")
+	requireSubstring(t, body, "ifoe_rx_fec_symbol_err_count_lane2{")
+	requireSubstring(t, body, "ifoe_rx_fec_symbol_err_count_lane3{")
+	requireSubstring(t, body, "ifoe_rx_bad_code_count{")
+	requireSubstring(t, body, "ifoe_rx_stomped_fcs{")
+	// Spot-check representative values (500, 507, 511, 512, 513).
+	requireSubstring(t, body, "} 500")
+	requireSubstring(t, body, "} 507")
+	requireSubstring(t, body, "} 511")
+	requireSubstring(t, body, "} 512")
+	requireSubstring(t, body, "} 513")
 
 	// Full label set on station/port series. Each of these would have
 	// been missing under the pre-fix code.
@@ -258,6 +293,14 @@ func buildIFOEStationResp(stationUUID, deviceUUID string) *amdgpu.UALStationGetR
 					StreamRemapsNetworkPort1: 4,
 					StreamRemapsNetworkPort2: 5,
 					StreamRemapsNetworkPort3: 6,
+					CryptoTxKeyUpdatesSA0:    77,
+					CryptoRxKey0UpdatesSA0:   78,
+					CryptoRxKey1UpdatesSA0:   79,
+					CryptoRxKeyDisablesSA0:   80,
+					CryptoTxKeyUpdatesSA1:    81,
+					CryptoRxKey0UpdatesSA1:   82,
+					CryptoRxKey1UpdatesSA1:   83,
+					CryptoRxKeyDisablesSA1:   84,
 				},
 			},
 		},
@@ -336,6 +379,20 @@ func buildIFOEPortResp(portUUID, stationUUID string) *amdgpu.UALNetworkPortGetRe
 					TxLLRReplaysCompleted:                32,
 					RxLLRBadPackets:                      33,
 					RxLLRDuplSeqPackets:                  34,
+					RxFECBitErr0To1Lane0:                 500,
+					RxFECBitErr0To1Lane1:                 501,
+					RxFECBitErr0To1Lane2:                 502,
+					RxFECBitErr0To1Lane3:                 503,
+					RxFECBitErr1To0Lane0:                 504,
+					RxFECBitErr1To0Lane1:                 505,
+					RxFECBitErr1To0Lane2:                 506,
+					RxFECBitErr1To0Lane3:                 507,
+					RxFECSymbolErrCountLane0:             508,
+					RxFECSymbolErrCountLane1:             509,
+					RxFECSymbolErrCountLane2:             510,
+					RxFECSymbolErrCountLane3:             511,
+					RxBadCodeCount:                       512,
+					RxStompedFCS:                         513,
 				},
 			},
 		},
