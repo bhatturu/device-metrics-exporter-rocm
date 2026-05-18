@@ -62,6 +62,7 @@ func main() {
 	enableIFOEMonitoring := fs.Bool("monitor-ifoe", false, "Enable IFOE Monitoring")
 	enableK8s := fs.Bool("enable-k8s", true, "Enable Kubernetes API server integration")
 	enableK8sScl := fs.Bool("enable-k8s-scl", true, "Enable Kubernetes Scheduler client integration")
+	enableCRI := fs.Bool("enable-cri", true, "Enable CRI runtime client for per-pod container ID resolution")
 	enableSlumrScl := fs.Bool("enable-slurm-scl", true, "Enable Slurm Scheduler client integration")
 	sriov := fs.Bool("sriov-enable", false, "sriov host mode")
 	exitOnAgentDown := fs.Bool("exit-on-agent-down", false, "Exit DME if gpuagent is unreachable after consecutive failures")
@@ -128,6 +129,7 @@ func main() {
 		exporter.WithenableIFOEMonitoring(*enableIFOEMonitoring),
 		exporter.WithK8sApiClient(*enableK8s),
 		exporter.WithK8sSchedulerClient(*enableK8sScl),
+		exporter.WithCRIClient(*enableCRI),
 	}
 
 	// Determine connection type:
