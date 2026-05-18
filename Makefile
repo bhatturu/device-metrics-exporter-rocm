@@ -114,8 +114,12 @@ BUILD_DIR := $(DOCS_DIR)/_build
 HTML_DIR := $(BUILD_DIR)/html
 
 # library branch to build amdsmi libraries for gpuagent
-AMDSMI_BRANCH ?= release/rocm-rel-7.2
-AMDSMI_COMMIT ?= 91c1f54
+# NOTE: AMDSMI_REPO defaults to an AMD-internal repository that requires AMD network access.
+# External builds should override with: make amdsmi-compile AMDSMI_REPO=https://github.com/ROCm/rocm-systems.git AMDSMI_BRANCH=release/therock-7.12
+AMDSMI_REPO   ?= https://github.com/AMD-ROCm-Internal/rocm-systems.git
+AMDSMI_BRANCH ?= amd-npi
+AMDSMI_COMMIT ?= f09c4481e96cec4c5a8457e6c1864b4c0db0b8a1
+AMDSMI_SUBDIR ?= projects/amdsmi
 GIMSMI_BRANCH ?= mainline
 GIMSMI_COMMIT ?= mainline/8.7.0.K
 GPUAGENT_BRANCH ?= main
@@ -134,8 +138,10 @@ export ${GOINSECURE}
 export ${KUBECONFIG}
 export ${AZURE_DOCKER_CONTAINER_IMG}
 export ${BUILD_VER_ENV}
+export ${AMDSMI_REPO}
 export ${AMDSMI_BRANCH}
 export ${AMDSMI_COMMIT}
+export ${AMDSMI_SUBDIR}
 export ${GIMSMI_BRANCH}
 export ${GIMSMI_COMMIT}
 export ${GPUAGENT_BRANCH}

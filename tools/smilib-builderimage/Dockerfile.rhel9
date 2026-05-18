@@ -9,9 +9,12 @@ WORKDIR /usr/src/github.com/ROCm/device-metrics-exporter/libamdsmi
 
 RUN dnf install -y 'dnf-command(config-manager)' && \
     dnf install -y --nobest --allowerasing findutils git gcc-c++ cmake make libstdc++ libstdc++-devel glibc-devel
-RUN dnf config-manager --add-repo=https://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/ && \
+RUN dnf config-manager \
+        --add-repo=https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/ \
+        --add-repo=https://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/ && \
     rpm --import https://www.centos.org/keys/RPM-GPG-KEY-CentOS-Official && \
-    dnf update -y --nobest --allowerasing && dnf install -y --nobest --allowerasing libdrm-devel
+    dnf update -y --nobest --allowerasing --exclude=openssl-fips-provider && \
+    dnf install -y --nobest --allowerasing libdrm-devel libnl3 libnl3-devel libmnl-devel
 
 ADD tools/smilib-builderimage/entrypoint.sh /usr/src/github.com/entrypoint.sh
 RUN chmod +x /usr/src/github.com/entrypoint.sh

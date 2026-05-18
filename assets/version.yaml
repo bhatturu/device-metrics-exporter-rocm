@@ -1,27 +1,28 @@
 assets:
   - name    : gpuagent_mock.bin.gz
-    version : 9645999
+    version : 01c39b8
     repo    : ROCm/gpu-agent
-    branch  : main
+    branch  : feature/collab-2.0.0-amdsmi-npi
 
   - name    : gpuagent_static.bin.gz
-    version : 9645999
+    version : 01c39b8
     repo    : ROCm/gpu-agent
-    branch  : main
+    branch  : feature/collab-2.0.0-amdsmi-npi
 
   - name    : gpuctl.gobin
-    version : 9645999
+    version : 01c39b8
     repo    : ROCm/gpu-agent
-    branch  : main
+    branch  : feature/collab-2.0.0-amdsmi-npi
 
   - name    : gpuagent_sriov_static.bin.gz
-    version : 9645999
+    version : 01c39b8
     repo    : ROCm/gpu-agent
-    branch  : main
+    branch  : feature/collab-2.0.0-amdsmi-npi
 
   - name    : amd_smi_lib
-    version : 91c1f54
-    branch  : release/rocm-rel-7.2
+    version : f09c4481
+    repo    : AMD-ROCm-Internal/rocm-systems
+    branch  : amd-npi
 
   - name    : rocprofiler
     version : 7.2

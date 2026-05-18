@@ -7,7 +7,7 @@ LABEL OS=${BUILD_BASE_IMAGE}
 ENV DEB_BUILD="amd-smi-lib-*99999-local*.deb"
 WORKDIR /usr/src/github.com/ROCm/device-metrics-exporter/libamdsmi
 
-RUN apt update && apt-get install -y git build-essential rpm pkg-config g++ libdrm-dev python3-pip python3-wheel
+RUN apt update && apt-get install -y git build-essential rpm pkg-config g++ libdrm-dev python3-pip python3-wheel libnl-3-dev libnl-genl-3-dev libmnl-dev
 
 RUN python3 -m pip install --break-system-packages --upgrade setuptools && \
     python3 -m pip install --break-system-packages cmake virtualenv
