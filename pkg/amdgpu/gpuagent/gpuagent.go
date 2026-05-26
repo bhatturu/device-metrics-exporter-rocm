@@ -49,6 +49,7 @@ type GPUAgentClient struct {
 	enableSlurmScl       bool
 	enableSriov          bool
 	exitOnAgentDown      bool      // exit DME process when agent is unreachable
+	exitOnRocpctlError   bool      // exit DME process when rocpctl auto-disables on failure
 	exitFn               func(int) // called instead of os.Exit; injectable for tests
 	useSocket            bool      // use socket connection instead of IP:port
 	socketPath           string    // socket path for connection
@@ -135,6 +136,12 @@ func WithSocketConnection(socketPath string) GPUAgentClientOptions {
 func WithExitOnAgentDown(exit bool) GPUAgentClientOptions {
 	return func(ga *GPUAgentClient) {
 		ga.exitOnAgentDown = exit
+	}
+}
+
+func WithExitOnRocpctlError(exit bool) GPUAgentClientOptions {
+	return func(ga *GPUAgentClient) {
+		ga.exitOnRocpctlError = exit
 	}
 }
 
@@ -388,6 +395,18 @@ func (ga *GPUAgentClient) StartMonitor() {
 
 			// Successful poll tick — reset the failure counter.
 			consecutiveFailures = 0
+
+			if ga.exitOnRocpctlError && ga.enableGPUMonitoring {
+				for _, client := range ga.clients {
+					if gpuClient, ok := client.(*GPUAgentGPUClient); ok {
+						if gpuClient.rocpclient != nil && gpuClient.rocpclient.IsDisabledOnFailure() {
+							logger.Log.Printf("exit-on-rocpctl-error: rocpctl auto-disabled (%s), exiting",
+								gpuClient.rocpclient.GetDisabledReason())
+							ga.exitFn(1)
+						}
+					}
+				}
+			}
 		}
 	}
 }
