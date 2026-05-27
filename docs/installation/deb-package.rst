@@ -9,7 +9,7 @@ Before installing the AMD GPU Metrics Exporter, you need to install the "AMDGPU"
 Please ensure that your system meets the following requirements:
 
 - **Operating System**: Ubuntu 22.04 or Ubuntu 24.04
-- **AMDGPU Driver Version**: 6.8.x and later
+- **ROCm / AMDGPU Driver**: ROCm 6.2.0 or later (includes the compatible AMDGPU driver)
 
 Installation
 ===================
@@ -34,17 +34,17 @@ Step 2: Install AMDGPU Driver
 ------------------------------
 
 .. note::
-   For the most up-to-date information on installing dkms drivers please see the `ROCm Install Quick Start <https://rocm.docs.amd.com/projects/install-on-linux/en/latest/install/quick-start.html>`_ page. The below instructions are the most current instructions as of ROCm 7.1.1.
+   For the most up-to-date information on installing dkms drivers please see the `ROCm Install Quick Start <https://rocm.docs.amd.com/projects/install-on-linux/en/latest/install/quick-start.html>`_ page.
 
-1. Download the driver from the Radeon repository (`repo.radeon.com <https://repo.radeon.com/amdgpu-install>`_) for your operating system. For example if you want to get the latest ROCm 7.1.1 drivers for Ubuntu 22.04 you would run the following command:
+1. Download the driver from the Radeon repository (`repo.radeon.com <https://repo.radeon.com/amdgpu-install>`_) for your operating system. For example, to install ROCm 7.2.3 on Ubuntu 22.04:
 
    .. code-block:: bash
 
-      wget https://repo.radeon.com/amdgpu-install/7.1.1/ubuntu/jammy/amdgpu-install_7.1.1.70101-1_all.deb
-      sudo apt install ./amdgpu-install_7.1.1.70101-1_all.deb
+      wget https://repo.radeon.com/amdgpu-install/7.2.3/ubuntu/jammy/amdgpu-install_7.2.3.70203-1_all.deb
+      sudo apt install ./amdgpu-install_7.2.3.70203-1_all.deb
       sudo apt update
 
-   Please note that the above url will be different depending on what version of the drivers you will be installing and type of Operating System you are using.
+   For other ROCm versions, browse `repo.radeon.com/amdgpu-install <https://repo.radeon.com/amdgpu-install>`_ to find the correct ``.deb`` for your OS.
 
 2. Install the driver:
 
