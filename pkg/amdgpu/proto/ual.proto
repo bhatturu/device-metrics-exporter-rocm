@@ -242,266 +242,25 @@ message UALNetworkPortStatus {
   uint64        RxLLRNextRxSeq             = 20;
 }
 
+// UAL telemetry counter
+message UALTelemetryCounter {
+  // name of the counter
+  string Name  = 1;
+  // current counter value
+  uint64 Value = 2;
+}
+
 // statistics of a UAL network port
 message UALNetworkPortStats {
   // current number of streams currently in failover state and remapped
   // to an alternative network port
-  uint32 NumFailedoverStreams                 = 1;
+  uint32                       NumFailedoverStreams = 1;
   // number of streams currently in paused state due to retrasmission
   // timeout and failover is either not possible or failover is disabled
-  uint32 NumPausedStreams                     = 2;
-  // current Bit Error Rate (BER) reported by the network port expressed as
-  // errors per 10^12 bits
-  uint64 BitErrorRate                         = 3;
-  // total number of FEC codewords with 0 symbol errors
-  uint64 FECCodeWordSymbolErrors0             = 4;
-  // total number of FEC codewords with 1 symbol error
-  uint64 FECCodeWordSymbolErrors1             = 5;
-  // total number of FEC codewords with 2 symbol errors
-  uint64 FECCodeWordSymbolErrors2             = 6;
-  // total number of FEC codewords with 3 symbol errors
-  uint64 FECCodeWordSymbolErrors3             = 7;
-  // total number of FEC codewords with 4 symbol errors
-  uint64 FECCodeWordSymbolErrors4             = 8;
-  // total number of FEC codewords with 5 symbol errors
-  uint64 FECCodeWordSymbolErrors5             = 9;
-  // total number of FEC codewords with 6 symbol errors
-  uint64 FECCodeWordSymbolErrors6             = 10;
-  // total number of FEC codewords with 7 symbol errors
-  uint64 FECCodeWordSymbolErrors7             = 11;
-  // total number of FEC codewords with 8 symbol errors
-  uint64 FECCodeWordSymbolErrors8             = 12;
-  // total number of FEC codewords with 9 symbol errors
-  uint64 FECCodeWordSymbolErrors9             = 13;
-  // total number of FEC codewords with 10 symbol errors
-  uint64 FECCodeWordSymbolErrors10            = 14;
-  // total number of FEC codewords with 11 symbol errors
-  uint64 FECCodeWordSymbolErrors11            = 15;
-  // total number of FEC codewords with 12 symbol errors
-  uint64 FECCodeWordSymbolErrors12            = 16;
-  // total number of FEC codewords with 13 symbol errors
-  uint64 FECCodeWordSymbolErrors13            = 17;
-  // total number of FEC codewords with 14 symbol errors
-  uint64 FECCodeWordSymbolErrors14            = 18;
-  // total number of FEC codewords with 15 symbol errors
-  uint64 FECCodeWordSymbolErrors15            = 19;
-  // total number of FEC codewords that are uncorrectable
-  uint64 FECCodeWordSymbolErrorsUncorrectable = 20;
-  // ethernet network port TX stats
-  // total number of bytes transmitted
-  uint64 TxTotalBytes                         = 21;
-  // total number of good bytes transmitted
-  uint64 TxTotalGoodBytes                     = 22;
-  // total number of bad bytes transmitted
-  uint64 TxTotalErrBytes                      = 23;
-  // total number of packets transmitted
-  uint64 TxTotalPackets                       = 24;
-  // total number of good packets transmitted
-  uint64 TxTotalGoodPackets                   = 25;
-  // total number of packets with frame error
-  uint64 TxFrameError                         = 26;
-  // total number of packets with bad FCS
-  uint64 TxBadFCS                             = 27;
-  // total number of 64-byte packets transmitted
-  uint64 TxPacket64Bytes                      = 28;
-  // total number of 65 to 127 byte packets transmitted
-  uint64 TxPacket65To127Bytes                 = 29;
-  // total number of 128 to 255 byte packets transmitted
-  uint64 TxPacket128To255Bytes                = 30;
-  // total number of 256 to 511 byte packets transmitted
-  uint64 TxPacket256To511Bytes                = 31;
-  // total number of 512 to 1023 byte packets transmitted
-  uint64 TxPacket512To1023Bytes               = 32;
-  // total number of 1024 to 1518 byte packets transmitted
-  uint64 TxPacket1024To1518Bytes              = 33;
-  // total number of 1519 to 1522 byte packets transmitted
-  uint64 TxPacket1519To1522Bytes              = 34;
-  // total number of 1523 to 1548 byte packets transmitted
-  uint64 TxPacket1523To1548Bytes              = 35;
-  // total number of 1549 to 2047 byte packets transmitted
-  uint64 TxPacket1549To2047Bytes              = 36;
-  // total number of 2048 to 4095 byte packets transmitted
-  uint64 TxPacket2048To4095Bytes              = 37;
-  // total number of 4096 to 8191 byte packets transmitted
-  uint64 TxPacket4096To8191Bytes              = 38;
-  // total number of 8192 to 9215 byte packets transmitted
-  uint64 TxPacket8192To9215Bytes              = 39;
-  // total number of packets over 9215 bytes transmitted
-  uint64 TxPacketLarge                        = 40;
-  // total number of good unicast packets transmitted
-  uint64 TxUnicast                            = 41;
-  // total number of good multicast packets transmitted
-  uint64 TxMulticast                          = 42;
-  // total number of good broadcast packets transmitted
-  uint64 TxBroadcast                          = 43;
-  // total number of 802.1Q VLAN tagged packets transmitted
-  uint64 TxVLAN                               = 44;
-  // total number of 802.3x MAC pause packets transmitted
-  uint64 TxPause                              = 45;
-  // total number of priority based pause packets transmitted
-  uint64 TxUserPause                          = 46;
-  // total number of padding bytes added
-  uint64 TxTotalPadBytes                      = 47;
-  // total number of packets that were padded
-  uint64 TxTotalPadPackets                    = 48;
-  // ethernet network port RX stats
-  // total number of bytes received
-  uint64 RxTotalBytes                         = 49;
-  // total number of good bytes received
-  uint64 RxTotalGoodBytes                     = 50;
-  // total number of bad bytes received
-  uint64 RxTotalErrBytes                      = 51;
-  // total number of packets received
-  uint64 RxTotalPackets                       = 52;
-  // total number of good packets received
-  uint64 RxTotalGoodPackets                   = 53;
-  // total number of small packets (less than 64 bytes) received
-  uint64 RxPacketSmall                        = 54;
-  // total number of dropped packets
-  uint64 RxPacketDropped                      = 55;
-  // count of 64B/66B code violations
-  uint64 RxBadCodeCount                       = 56;
-  // total number of packets with bad FCS
-  uint64 RxBadFCS                             = 57;
-  // total number of packets with bad FCS (64 to max length)
-  uint64 RxPacketBadFCS                       = 58;
-  // total number of packets with stomped FCS
-  uint64 RxStompedFCS                         = 59;
-  // total number of truncated packets
-  uint64 RxTruncated                          = 60;
-  // total number of 64-byte packets received
-  uint64 RxPacket64Bytes                      = 61;
-  // total number of 65 to 127 byte packets received
-  uint64 RxPacket65To127Bytes                 = 62;
-  // total number of 128 to 255 byte packets received
-  uint64 RxPacket128To255Bytes                = 63;
-  // total number of 256 to 511 byte packets received
-  uint64 RxPacket256To511Bytes                = 64;
-  // total number of 512 to 1023 byte packets received
-  uint64 RxPacket512To1023Bytes               = 65;
-  // total number of 1024 to 1518 byte packets received
-  uint64 RxPacket1024To1518Bytes              = 66;
-  // total number of 1519 to 1522 byte packets received
-  uint64 RxPacket1519To1522Bytes              = 67;
-  // total number of 1523 to 1548 byte packets received
-  uint64 RxPacket1523To1548Bytes              = 68;
-  // total number of 1549 to 2047 byte packets received
-  uint64 RxPacket1549To2047Bytes              = 69;
-  // total number of 2048 to 4095 byte packets received
-  uint64 RxPacket2048To4095Bytes              = 70;
-  // total number of 4096 to 8191 byte packets received
-  uint64 RxPacket4096To8191Bytes              = 71;
-  // total number of 8192 to 9215 byte packets received
-  uint64 RxPacket8192To9215Bytes              = 72;
-  // total number of packets longer than max length
-  uint64 RxTooLong                            = 73;
-  // total number of large packets (greater than 9215 bytes) received
-  uint64 RxPacketLarge                        = 74;
-  // total number of packets longer than max length with bad FCS
-  uint64 RxJabber                             = 75;
-  // total number of packets longer than max length with good FCS
-  uint64 RxOversize                           = 76;
-  // total number of received unicast packets
-  uint64 RxUnicast                            = 77;
-  // total number of received multicast packets
-  uint64 RxMulticast                          = 78;
-  // total number of received broadcast packets
-  uint64 RxBroadcast                          = 79;
-  // total number of received VLAN tagged packets
-  uint64 RxVLAN                               = 80;
-  // total number of received 802.3x pause packets
-  uint64 RxPause                              = 81;
-  // total number of received priority based pause packets
-  uint64 RxUserPause                          = 82;
-  // total number of frames with in-range length errors
-  uint64 RxInRangeErr                         = 83;
-  // ethernet network port FEC RX stats
-  // count of FEC processed codewords
-  uint64 RxFECCodewords                       = 84;
-  // count of FEC corrected codewords
-  uint64 RxFECCorrectedCodewords              = 85;
-  // count of FEC uncorrected codewords
-  uint64 RxFECUncorrectedCodewords            = 86;
-  // count of FEC codeword B for interleaved FEC modes
-  uint64 RxFECCodewordB                       = 87;
-  // count of FEC corrected codeword B for interleaved FEC modes
-  uint64 RxFECCorrectedCodewordB              = 88;
-  // count of FEC uncorrected codeword B for interleaved FEC modes
-  uint64 RxFECUncorrectedCodewordB            = 89;
-  // number of bits corrected from 0 to 1 by RX FEC on lane 0
-  uint64 RxFECBitErr0To1Lane0                 = 90;
-  // number of bits corrected from 0 to 1 by RX FEC on lane 1
-  uint64 RxFECBitErr0To1Lane1                 = 91;
-  // number of bits corrected from 0 to 1 by RX FEC on lane 2
-  uint64 RxFECBitErr0To1Lane2                 = 92;
-  // number of bits corrected from 0 to 1 by RX FEC on lane 3
-  uint64 RxFECBitErr0To1Lane3                 = 93;
-  // number of bits corrected from 1 to 0 by RX FEC on lane 0
-  uint64 RxFECBitErr1To0Lane0                 = 94;
-  // number of bits corrected from 1 to 0 by RX FEC on lane 1
-  uint64 RxFECBitErr1To0Lane1                 = 95;
-  // number of bits corrected from 1 to 0 by RX FEC on lane 2
-  uint64 RxFECBitErr1To0Lane2                 = 96;
-  // number of bits corrected from 1 to 0 by RX FEC on lane 3
-  uint64 RxFECBitErr1To0Lane3                 = 97;
-  // count of FEC symbol errors corrected on FEC lane 0
-  uint64 RxFECSymbolErrCountLane0             = 98;
-  // count of FEC symbol errors corrected on FEC lane 1
-  uint64 RxFECSymbolErrCountLane1             = 99;
-  // count of FEC symbol errors corrected on FEC lane 2
-  uint64 RxFECSymbolErrCountLane2             = 100;
-  // count of FEC symbol errors corrected on FEC lane 3
-  uint64 RxFECSymbolErrCountLane3             = 101;
-  // TX LLR statistics
-  // count of ACK control symbols transmitted
-  uint64 TxLLRAckCtlOS                        = 102;
-  // count of NACK control symbols transmitted
-  uint64 TxLLRNackCtlOS                       = 103;
-  // count of INIT control symbols transmitted
-  uint64 TxLLRInitCtlOS                       = 104;
-  // count of INIT_ECHO control symbols transmitted
-  uint64 TxLLRInitEchoCtlOS                   = 105;
-  // count of packets discarded due to flush
-  uint64 TxLLRFlushDiscardedPackets           = 106;
-  // count of packets discarded during initialization
-  uint64 TxLLRInitDiscardedPackets            = 107;
-  // count of successfully transmitted packets
-  uint64 TxLLROkPackets                       = 108;
-  // count of transmitted poisoned packets
-  uint64 TxLLRPoisonedPackets                 = 109;
-  // count of ACK/NACK sequence number errors received
-  uint64 TxLLRRcvdAckNackSeqError             = 110;
-  // count of completed replays
-  uint64 TxLLRReplaysCompleted                = 111;
-  // count of replay events
-  uint64 TxLLRReplayCt                        = 112;
-  // RX LLR statistics
-  // count of ACK control symbols received
-  uint64 RxLLRAckCtlOS                        = 113;
-  // count of NACK control symbols received
-  uint64 RxLLRNackCtlOS                       = 114;
-  // count of INIT control symbols received
-  uint64 RxLLRInitCtlOS                       = 115;
-  // count of INIT_ECHO control symbols received
-  uint64 RxLLRInitEchoCtlOS                   = 116;
-  // count of bad packets received
-  uint64 RxLLRBadPackets                      = 117;
-  // count of duplicate sequence number packets received
-  uint64 RxLLRDuplSeqPackets                  = 118;
-  // count of expected sequence bad packets received
-  uint64 RxLLRExpSeqBadPackets                = 119;
-  // count of expected sequence good packets received
-  uint64 RxLLRExpSeqGoodPackets               = 120;
-  // count of expected sequence poisoned packets received
-  uint64 RxLLRExpSeqPoisonedPackets           = 121;
-  // count of missing sequence packets received
-  uint64 RxLLRMissSeqPackets                  = 122;
-  // count of successfully received packets
-  uint64 RxLLROkPackets                       = 123;
-  // count of received poisoned packets
-  uint64 RxLLRPoisonedPackets                 = 124;
-  // count of detected replays
-  uint64 RxLLRReplaysDetected                 = 125;
+  uint32                       NumPausedStreams     = 2;
+  // network port telemetry counters
+  // BREAKING: reuses field 3 (was BitErrorRate). Exporter and gpuagent must be upgraded together.
+  repeated UALTelemetryCounter Stats                = 3;
 }
 
 // UAL network port config, operational status and statistics
@@ -614,42 +373,9 @@ message UALStationStatus {
 
 // statistics associated with a UAL station
 message UALStationStats {
-  // count of IFoE request packets transmitted
-  uint64 TxRequestPacketCount     = 1;
-  // count of IFoE response packets transmitted
-  uint64 TxResponsePacketCount    = 2;
-  // count of IFoE request packets received
-  uint64 RxRequestPacketCount     = 3;
-  // count of IFoE response packets received
-  uint64 RxResponsePacketCount    = 4;
-  // total count of streams remapped due to retransmission timeout
-  uint64 StreamRemapsTotal        = 5;
-  // count of streams remapped on network port 0
-  uint64 StreamRemapsNetworkPort0 = 6;
-  // count of streams remapped on network port 1
-  uint64 StreamRemapsNetworkPort1 = 7;
-  // count of streams remapped on network port 2
-  uint64 StreamRemapsNetworkPort2 = 8;
-  // count of streams remapped on network port 3
-  uint64 StreamRemapsNetworkPort3 = 9;
-  // live number of IFoE streams paused due to retransmission timeouts
-  uint64 PausedStreamsCount       = 10;
-  // count of encryption key updates for security association 0
-  uint64 CryptoTxKeyUpdatesSA0    = 11;
-  // count of decryption key 0 updates for security association 0
-  uint64 CryptoRxKey0UpdatesSA0   = 12;
-  // count of decryption key 1 updates for security association 0
-  uint64 CryptoRxKey1UpdatesSA0   = 13;
-  // count of decryption key disables for security association 0
-  uint64 CryptoRxKeyDisablesSA0   = 14;
-  // count of encryption key updates for security association 1
-  uint64 CryptoTxKeyUpdatesSA1    = 15;
-  // count of decryption key 0 updates for security association 1
-  uint64 CryptoRxKey0UpdatesSA1   = 16;
-  // count of decryption key 1 updates for security association 1
-  uint64 CryptoRxKey1UpdatesSA1   = 17;
-  // count of decryption key disables for security association 1
-  uint64 CryptoRxKeyDisablesSA1   = 18;
+  // station telemetry counters
+  // BREAKING: reuses field 1 (was TxRequestPacketCount). Exporter and gpuagent must be upgraded together.
+  repeated UALTelemetryCounter Stats = 1;
 }
 
 // UAL station config, operational status and statistics

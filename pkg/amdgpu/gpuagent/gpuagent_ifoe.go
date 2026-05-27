@@ -23,6 +23,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/ROCm/device-metrics-exporter/pkg/amdgpu/gen/amdgpu"
 	"github.com/ROCm/device-metrics-exporter/pkg/exporter/gen/exportermetrics"
 	"github.com/ROCm/device-metrics-exporter/pkg/exporter/globals"
@@ -45,6 +47,8 @@ type GPUAgentIFOEClient struct {
 	extraPodLabelsMap      map[string]string
 	k8PodInfoMap           map[string]types.K8sPodInfo
 	fieldMetricsMap        map[string]FieldMeta
+	portStatsNameMap       map[string]*prometheus.GaugeVec
+	stationStatsNameMap    map[string]*prometheus.GaugeVec
 	staticHostLabels       map[string]string
 	podInfoEnabled         bool
 
@@ -336,68 +340,7 @@ func (ga *GPUAgentIFOEClient) updateMetrics(ctx context.Context) error {
 		if stats != nil {
 			ga.metrics.numFailedoverStreams.With(ifoeLabels).Set(float64(stats.NumFailedoverStreams))
 			ga.metrics.numPausedStreams.With(ifoeLabels).Set(float64(stats.NumPausedStreams))
-			ga.metrics.bitErrorRate.With(ifoeLabels).Set(float64(stats.BitErrorRate))
-			ga.metrics.fecCodeWordSymbolErrors0.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors0))
-			ga.metrics.fecCodeWordSymbolErrors1.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors1))
-			ga.metrics.fecCodeWordSymbolErrors2.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors2))
-			ga.metrics.fecCodeWordSymbolErrors3.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors3))
-			ga.metrics.fecCodeWordSymbolErrors4.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors4))
-			ga.metrics.fecCodeWordSymbolErrors5.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors5))
-			ga.metrics.fecCodeWordSymbolErrors6.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors6))
-			ga.metrics.fecCodeWordSymbolErrors7.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors7))
-			ga.metrics.fecCodeWordSymbolErrors8.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors8))
-			ga.metrics.fecCodeWordSymbolErrors9.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors9))
-			ga.metrics.fecCodeWordSymbolErrors10.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors10))
-			ga.metrics.fecCodeWordSymbolErrors11.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors11))
-			ga.metrics.fecCodeWordSymbolErrors12.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors12))
-			ga.metrics.fecCodeWordSymbolErrors13.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors13))
-			ga.metrics.fecCodeWordSymbolErrors14.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors14))
-			ga.metrics.fecCodeWordSymbolErrors15.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrors15))
-			ga.metrics.fecCodeWordSymbolErrorsUncorrectable.With(ifoeLabels).Set(float64(stats.FECCodeWordSymbolErrorsUncorrectable))
-			ga.metrics.txTotalBytes.With(ifoeLabels).Set(float64(stats.TxTotalBytes))
-			ga.metrics.txTotalGoodBytes.With(ifoeLabels).Set(float64(stats.TxTotalGoodBytes))
-			ga.metrics.txTotalErrBytes.With(ifoeLabels).Set(float64(stats.TxTotalErrBytes))
-			ga.metrics.txTotalPackets.With(ifoeLabels).Set(float64(stats.TxTotalPackets))
-			ga.metrics.txTotalGoodPackets.With(ifoeLabels).Set(float64(stats.TxTotalGoodPackets))
-			ga.metrics.txFrameError.With(ifoeLabels).Set(float64(stats.TxFrameError))
-			ga.metrics.txBadFCS.With(ifoeLabels).Set(float64(stats.TxBadFCS))
-			ga.metrics.rxTotalBytes.With(ifoeLabels).Set(float64(stats.RxTotalBytes))
-			ga.metrics.rxTotalGoodBytes.With(ifoeLabels).Set(float64(stats.RxTotalGoodBytes))
-			ga.metrics.rxTotalErrBytes.With(ifoeLabels).Set(float64(stats.RxTotalErrBytes))
-			ga.metrics.rxTotalPackets.With(ifoeLabels).Set(float64(stats.RxTotalPackets))
-			ga.metrics.rxTotalGoodPackets.With(ifoeLabels).Set(float64(stats.RxTotalGoodPackets))
-			ga.metrics.rxPacketDropped.With(ifoeLabels).Set(float64(stats.RxPacketDropped))
-			ga.metrics.rxBadFCS.With(ifoeLabels).Set(float64(stats.RxBadFCS))
-			ga.metrics.rxFECCorrectedCodewords.With(ifoeLabels).Set(float64(stats.RxFECCorrectedCodewords))
-			ga.metrics.rxFECUncorrectedCodewords.With(ifoeLabels).Set(float64(stats.RxFECUncorrectedCodewords))
-			ga.metrics.txPause.With(ifoeLabels).Set(float64(stats.TxPause))
-			ga.metrics.rxPause.With(ifoeLabels).Set(float64(stats.RxPause))
-			ga.metrics.txUserPause.With(ifoeLabels).Set(float64(stats.TxUserPause))
-			ga.metrics.rxUserPause.With(ifoeLabels).Set(float64(stats.RxUserPause))
-			ga.metrics.rxJabber.With(ifoeLabels).Set(float64(stats.RxJabber))
-			ga.metrics.rxOversize.With(ifoeLabels).Set(float64(stats.RxOversize))
-			ga.metrics.rxTooLong.With(ifoeLabels).Set(float64(stats.RxTooLong))
-			ga.metrics.rxTruncated.With(ifoeLabels).Set(float64(stats.RxTruncated))
-			ga.metrics.txLLROkPackets.With(ifoeLabels).Set(float64(stats.TxLLROkPackets))
-			ga.metrics.rxLLROkPackets.With(ifoeLabels).Set(float64(stats.RxLLROkPackets))
-			ga.metrics.txLLRReplayCount.With(ifoeLabels).Set(float64(stats.TxLLRReplayCt))
-			ga.metrics.txLLRReplaysCompleted.With(ifoeLabels).Set(float64(stats.TxLLRReplaysCompleted))
-			ga.metrics.rxLLRBadPackets.With(ifoeLabels).Set(float64(stats.RxLLRBadPackets))
-			ga.metrics.rxLLRDuplSeqPackets.With(ifoeLabels).Set(float64(stats.RxLLRDuplSeqPackets))
-			ga.metrics.rxFECBitErr0To1Lane0.With(ifoeLabels).Set(float64(stats.RxFECBitErr0To1Lane0))
-			ga.metrics.rxFECBitErr0To1Lane1.With(ifoeLabels).Set(float64(stats.RxFECBitErr0To1Lane1))
-			ga.metrics.rxFECBitErr0To1Lane2.With(ifoeLabels).Set(float64(stats.RxFECBitErr0To1Lane2))
-			ga.metrics.rxFECBitErr0To1Lane3.With(ifoeLabels).Set(float64(stats.RxFECBitErr0To1Lane3))
-			ga.metrics.rxFECBitErr1To0Lane0.With(ifoeLabels).Set(float64(stats.RxFECBitErr1To0Lane0))
-			ga.metrics.rxFECBitErr1To0Lane1.With(ifoeLabels).Set(float64(stats.RxFECBitErr1To0Lane1))
-			ga.metrics.rxFECBitErr1To0Lane2.With(ifoeLabels).Set(float64(stats.RxFECBitErr1To0Lane2))
-			ga.metrics.rxFECBitErr1To0Lane3.With(ifoeLabels).Set(float64(stats.RxFECBitErr1To0Lane3))
-			ga.metrics.rxFECSymbolErrCountLane0.With(ifoeLabels).Set(float64(stats.RxFECSymbolErrCountLane0))
-			ga.metrics.rxFECSymbolErrCountLane1.With(ifoeLabels).Set(float64(stats.RxFECSymbolErrCountLane1))
-			ga.metrics.rxFECSymbolErrCountLane2.With(ifoeLabels).Set(float64(stats.RxFECSymbolErrCountLane2))
-			ga.metrics.rxFECSymbolErrCountLane3.With(ifoeLabels).Set(float64(stats.RxFECSymbolErrCountLane3))
-			ga.metrics.rxBadCodeCount.With(ifoeLabels).Set(float64(stats.RxBadCodeCount))
-			ga.metrics.rxStompedFCS.With(ifoeLabels).Set(float64(stats.RxStompedFCS))
+			ga.setTelemetryCounters(stats.Stats, ga.portStatsNameMap, ifoeLabels)
 		}
 	}
 
@@ -411,25 +354,19 @@ func (ga *GPUAgentIFOEClient) updateMetrics(ctx context.Context) error {
 		stationLabels["station_uuid"] = stationUuid
 		stationLabels["device_uuid"] = devUuid
 
-		stats := ualStation.Stats
-		ga.metrics.stationTxRequestPackets.With(stationLabels).Set(float64(stats.TxRequestPacketCount))
-		ga.metrics.stationTxResponsePackets.With(stationLabels).Set(float64(stats.TxResponsePacketCount))
-		ga.metrics.stationRxRequestPackets.With(stationLabels).Set(float64(stats.RxRequestPacketCount))
-		ga.metrics.stationRxResponsePackets.With(stationLabels).Set(float64(stats.RxResponsePacketCount))
-		ga.metrics.stationStreamRemapsTotal.With(stationLabels).Set(float64(stats.StreamRemapsTotal))
-		ga.metrics.stationPausedStreamsCount.With(stationLabels).Set(float64(stats.PausedStreamsCount))
-		ga.metrics.stationStreamRemapsNetworkPort0.With(stationLabels).Set(float64(stats.StreamRemapsNetworkPort0))
-		ga.metrics.stationStreamRemapsNetworkPort1.With(stationLabels).Set(float64(stats.StreamRemapsNetworkPort1))
-		ga.metrics.stationStreamRemapsNetworkPort2.With(stationLabels).Set(float64(stats.StreamRemapsNetworkPort2))
-		ga.metrics.stationStreamRemapsNetworkPort3.With(stationLabels).Set(float64(stats.StreamRemapsNetworkPort3))
-		ga.metrics.stationCryptoTxKeyUpdatesSA0.With(stationLabels).Set(float64(stats.CryptoTxKeyUpdatesSA0))
-		ga.metrics.stationCryptoRxKey0UpdatesSA0.With(stationLabels).Set(float64(stats.CryptoRxKey0UpdatesSA0))
-		ga.metrics.stationCryptoRxKey1UpdatesSA0.With(stationLabels).Set(float64(stats.CryptoRxKey1UpdatesSA0))
-		ga.metrics.stationCryptoRxKeyDisablesSA0.With(stationLabels).Set(float64(stats.CryptoRxKeyDisablesSA0))
-		ga.metrics.stationCryptoTxKeyUpdatesSA1.With(stationLabels).Set(float64(stats.CryptoTxKeyUpdatesSA1))
-		ga.metrics.stationCryptoRxKey0UpdatesSA1.With(stationLabels).Set(float64(stats.CryptoRxKey0UpdatesSA1))
-		ga.metrics.stationCryptoRxKey1UpdatesSA1.With(stationLabels).Set(float64(stats.CryptoRxKey1UpdatesSA1))
-		ga.metrics.stationCryptoRxKeyDisablesSA1.With(stationLabels).Set(float64(stats.CryptoRxKeyDisablesSA1))
+		ga.setTelemetryCounters(ualStation.Stats.Stats, ga.stationStatsNameMap, stationLabels)
 	}
 	return nil
+}
+
+func (ga *GPUAgentIFOEClient) setTelemetryCounters(
+	counters []*amdgpu.UALTelemetryCounter,
+	nameMap map[string]*prometheus.GaugeVec,
+	labels prometheus.Labels,
+) {
+	for _, c := range counters {
+		if gauge, ok := nameMap[c.GetName()]; ok {
+			gauge.With(labels).Set(float64(c.GetValue()))
+		}
+	}
 }

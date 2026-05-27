@@ -842,6 +842,136 @@ enum IFOEMetricField {
     IFOE_STATION_CRYPTO_RX_KEY0_UPDATES_SA1     = 89;
     IFOE_STATION_CRYPTO_RX_KEY1_UPDATES_SA1     = 90;
     IFOE_STATION_CRYPTO_RX_KEY_DISABLES_SA1     = 91;
+    // Port-level queue and pause counters
+    IFOE_DISCARD_Q_RX_DROPPED_PACKETS                            = 92;
+    IFOE_NONIFOE_Q_RX_TOTAL_PACKETS                              = 93;
+    IFOE_NONIFOE_Q_RX_XOFF_TOTAL                                 = 94;
+    IFOE_NONIFOE_Q_TX_TOTAL_PACKETS                              = 95;
+    IFOE_NONIFOE_Q_TX_XOFF_TOTAL                                 = 96;
+    IFOE_REQ_Q_RX_DROPPED_PACKETS                                = 97;
+    IFOE_RES_Q_RX_DROPPED_PACKETS                                = 98;
+    IFOE_RX_PAUSE_PACKETS_RCVD                                   = 99;
+    IFOE_TX_PAUSE_PACKETS_SENT                                   = 100;
+    // Station-level RENG counters
+    IFOE_STATION_RENG_FREE_BLK_OUT                               = 101;
+    IFOE_STATION_RENG_FREE_PKT_OUT                               = 102;
+    IFOE_STATION_RENG_FREE_SCH_IN                                = 103;
+    IFOE_STATION_RENG_READ_PKT_OUT                               = 104;
+    IFOE_STATION_RENG_READ_SCH_IN                                = 105;
+    // Station-level RX decap counters
+    IFOE_STATION_RX_DECAP_DROPPED_PKTS                           = 106;
+    IFOE_STATION_RX_DECAP_RX_NAK_EGRESS_REQ                     = 107;
+    IFOE_STATION_RX_DECAP_RX_NAK_EGRESS_RSP                     = 108;
+    IFOE_STATION_RX_DECAP_TX_NAK_EGRESS_REQ                     = 109;
+    IFOE_STATION_RX_DECAP_TX_NAK_EGRESS_RSP                     = 110;
+    // Station-level switch/nonIFOE counters
+    IFOE_STATION_RX_DROPPED_PKTS                                 = 111;
+    IFOE_STATION_RX_NONIFOE_PKTS                                 = 112;
+    // Station-level SDP RX unpack counters
+    IFOE_STATION_SDP_RX_UNPACK_ORIGDATA_CREDITS_CONSUMED         = 113;
+    IFOE_STATION_SDP_RX_UNPACK_ORIGDATA_CREDITS_RETURNED         = 114;
+    IFOE_STATION_SDP_RX_UNPACK_RDRSP_CREDITS_CONSUMED            = 115;
+    IFOE_STATION_SDP_RX_UNPACK_RDRSP_CREDITS_RETURNED            = 116;
+    IFOE_STATION_SDP_RX_UNPACK_REQ_CREDITS_CONSUMED              = 117;
+    IFOE_STATION_SDP_RX_UNPACK_REQ_CREDITS_RETURNED              = 118;
+    IFOE_STATION_SDP_RX_UNPACK_REQ_CYCLES_STALLED                = 119;
+    IFOE_STATION_SDP_RX_UNPACK_REQ_CYCLES_STALLED_CNT            = 120;
+    IFOE_STATION_SDP_RX_UNPACK_REQ_EXCESS_CREDITS_RETURNED       = 121;
+    IFOE_STATION_SDP_RX_UNPACK_REQ_PAYLOAD_CREDITS_RETURNED      = 122;
+    IFOE_STATION_SDP_RX_UNPACK_REQ_TOTAL_CREDITS_CONSUMED        = 123;
+    IFOE_STATION_SDP_RX_UNPACK_RETAG_FREED                       = 124;
+    IFOE_STATION_SDP_RX_UNPACK_RETAG_USED                        = 125;
+    IFOE_STATION_SDP_RX_UNPACK_RSP_CYCLES_STALLED                = 126;
+    IFOE_STATION_SDP_RX_UNPACK_RSP_CYCLES_STALLED_CNT            = 127;
+    IFOE_STATION_SDP_RX_UNPACK_RSP_EXCESS_CREDITS_RETURNED       = 128;
+    IFOE_STATION_SDP_RX_UNPACK_RSP_PAYLOAD_CREDITS_RETURNED      = 129;
+    IFOE_STATION_SDP_RX_UNPACK_RSP_TOTAL_CREDITS_CONSUMED        = 130;
+    IFOE_STATION_SDP_RX_UNPACK_WRRSP_CREDITS_CONSUMED            = 131;
+    IFOE_STATION_SDP_RX_UNPACK_WRRSP_CREDITS_RETURNED            = 132;
+    // Station-level SDP TX pack counters
+    IFOE_STATION_SDP_TX_PACK_ATM_REQ                             = 133;
+    IFOE_STATION_SDP_TX_PACK_ORIG_DATA                           = 134;
+    IFOE_STATION_SDP_TX_PACK_ORIG_DATA_CREDIT_CONSUMED           = 135;
+    IFOE_STATION_SDP_TX_PACK_ORIG_DATA_CREDIT_RELEASED           = 136;
+    IFOE_STATION_SDP_TX_PACK_ORIG_DATA_EB_EMPTY                  = 137;
+    IFOE_STATION_SDP_TX_PACK_ORIG_DATA_EB_FULL                   = 138;
+    IFOE_STATION_SDP_TX_PACK_ORIG_DATA_ERROR                     = 139;
+    IFOE_STATION_SDP_TX_PACK_RD_REQ                              = 140;
+    IFOE_STATION_SDP_TX_PACK_RD_RSP                              = 141;
+    IFOE_STATION_SDP_TX_PACK_RD_RSP_CREDIT_CONSUMED              = 142;
+    IFOE_STATION_SDP_TX_PACK_RD_RSP_CREDIT_RELEASED              = 143;
+    IFOE_STATION_SDP_TX_PACK_RD_RSP_DATA_ERROR                   = 144;
+    IFOE_STATION_SDP_TX_PACK_RD_RSP_EB_EMPTY                     = 145;
+    IFOE_STATION_SDP_TX_PACK_RD_RSP_EB_FULL                      = 146;
+    IFOE_STATION_SDP_TX_PACK_RD_RSP_PCL_EMPTY                    = 147;
+    IFOE_STATION_SDP_TX_PACK_RD_RSP_PCL_FULL                     = 148;
+    IFOE_STATION_SDP_TX_PACK_REQ_CREDIT_CONSUMED                 = 149;
+    IFOE_STATION_SDP_TX_PACK_REQ_CREDIT_RELEASED                 = 150;
+    IFOE_STATION_SDP_TX_PACK_REQ_EB_EMPTY                        = 151;
+    IFOE_STATION_SDP_TX_PACK_REQ_EB_FULL                         = 152;
+    IFOE_STATION_SDP_TX_PACK_REQ_PCL                             = 153;
+    IFOE_STATION_SDP_TX_PACK_REQ_PCL_EMPTY                       = 154;
+    IFOE_STATION_SDP_TX_PACK_REQ_PCL_FULL                        = 155;
+    IFOE_STATION_SDP_TX_PACK_REQ_POOL_EMPTY                      = 156;
+    IFOE_STATION_SDP_TX_PACK_REQ_POOL_FULL                       = 157;
+    IFOE_STATION_SDP_TX_PACK_RSP_POOL_EMPTY                      = 158;
+    IFOE_STATION_SDP_TX_PACK_RSP_POOL_FULL                       = 159;
+    IFOE_STATION_SDP_TX_PACK_WR_REQ                              = 160;
+    IFOE_STATION_SDP_TX_PACK_WR_RSP                              = 161;
+    IFOE_STATION_SDP_TX_PACK_WR_RSP_CREDIT_CONSUMED              = 162;
+    IFOE_STATION_SDP_TX_PACK_WR_RSP_CREDIT_RELEASED              = 163;
+    IFOE_STATION_SDP_TX_PACK_WR_RSP_EB_EMPTY                     = 164;
+    IFOE_STATION_SDP_TX_PACK_WR_RSP_EB_FULL                      = 165;
+    IFOE_STATION_SDP_TX_PACK_WR_RSP_PCL_EMPTY                    = 166;
+    IFOE_STATION_SDP_TX_PACK_WR_RSP_PCL_FULL                     = 167;
+    // Station-level TX encap counters
+    IFOE_STATION_TX_ENCAP_PKT_EGRESS_XRSEC_NPORT_0              = 168;
+    IFOE_STATION_TX_ENCAP_PKT_EGRESS_XRSEC_NPORT_1              = 169;
+    IFOE_STATION_TX_ENCAP_PKT_EGRESS_XRSEC_NPORT_2              = 170;
+    IFOE_STATION_TX_ENCAP_PKT_EGRESS_XRSEC_NPORT_3              = 171;
+    IFOE_STATION_TX_ENCAP_STALL_EGRESS_XRSEC                    = 172;
+    IFOE_STATION_TX_ENCAP_STALL_INGRESS                          = 173;
+    // Station-level nonIFOE TX and TX scheduler counters
+    IFOE_STATION_TX_NONIFOE_PKTS                                 = 174;
+    IFOE_STATION_TX_SCHED_ACTIVE_RX_ACK_PKTS                    = 175;
+    IFOE_STATION_TX_SCHED_ACTIVE_STREAMS                         = 176;
+    IFOE_STATION_TX_SCHED_BOOSTED_PRI_STREAMS                    = 177;
+    IFOE_STATION_TX_SCHED_EMPTY_QUEUE_STREAMS                    = 178;
+    IFOE_STATION_TX_SCHED_EMPTY_SEND_QUEUE_STREAMS               = 179;
+    IFOE_STATION_TX_SCHED_PAUSED_STREAMS                         = 180;
+    IFOE_STATION_TX_SCHED_REQ_PKTS                               = 181;
+    IFOE_STATION_TX_SCHED_RES_PKTS                               = 182;
+    // Station-level WENG counters
+    IFOE_STATION_WENG_BSTATE_FREE_BLK_DELAY_REQ                 = 183;
+    IFOE_STATION_WENG_BSTATE_FREE_BLK_DELAY_RES                 = 184;
+    IFOE_STATION_WENG_EVICTION_CHAIN_DELAY_REQ                   = 185;
+    IFOE_STATION_WENG_EVICTION_CHAIN_DELAY_RES                   = 186;
+    IFOE_STATION_WENG_EVICTION_EXPIRY_REQ                        = 187;
+    IFOE_STATION_WENG_EVICTION_EXPIRY_RES                        = 188;
+    IFOE_STATION_WENG_EVICTION_FORCE_CHAIN_DELAY_REQ             = 189;
+    IFOE_STATION_WENG_EVICTION_FORCE_CHAIN_DELAY_RES             = 190;
+    IFOE_STATION_WENG_EVICTION_FORCE_HOLD_DELAY_REQ              = 191;
+    IFOE_STATION_WENG_EVICTION_FORCE_HOLD_DELAY_RES              = 192;
+    IFOE_STATION_WENG_EVICTION_FORCE_REQ                         = 193;
+    IFOE_STATION_WENG_EVICTION_FORCE_RES                         = 194;
+    IFOE_STATION_WENG_EVICTION_MTU_HOLD_DELAY_REQ                = 195;
+    IFOE_STATION_WENG_EVICTION_MTU_HOLD_DELAY_RES                = 196;
+    IFOE_STATION_WENG_EVICTION_MTU_REQ                           = 197;
+    IFOE_STATION_WENG_EVICTION_MTU_RES                           = 198;
+    IFOE_STATION_WENG_EVICTION_PAYLOAD_REQ                       = 199;
+    IFOE_STATION_WENG_EVICTION_PAYLOAD_RES                       = 200;
+    IFOE_STATION_WENG_OP_SDP_CHAIN_REQ                           = 201;
+    IFOE_STATION_WENG_OP_SDP_CHAIN_RES                           = 202;
+    IFOE_STATION_WENG_OP_SDP_FORCE_REQ                           = 203;
+    IFOE_STATION_WENG_OP_SDP_FORCE_RES                           = 204;
+    IFOE_STATION_WENG_OP_SDP_LENGTH_REQ                          = 205;
+    IFOE_STATION_WENG_OP_SDP_LENGTH_RES                          = 206;
+    IFOE_STATION_WENG_OP_SDP_PKT_OPEN_REQ                        = 207;
+    IFOE_STATION_WENG_OP_SDP_PKT_OPEN_RES                        = 208;
+    IFOE_STATION_WENG_OP_SDP_REQ                                 = 209;
+    IFOE_STATION_WENG_OP_SDP_RES                                 = 210;
+    IFOE_STATION_WENG_OP_SDP_WORD_REQ                            = 211;
+    IFOE_STATION_WENG_OP_SDP_WORD_RES                            = 212;
 }
 
 message IFOEMetricConfig
