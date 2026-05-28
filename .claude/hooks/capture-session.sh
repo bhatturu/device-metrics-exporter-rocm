@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# SessionEnd hook: copy the session JSONL transcript into .claude/kb_source/_pending/
+# for later distillation by the /curate-learnings skill.
+#
+# Cheap-session gate: skip if the session had <5 tool_use events.
+# Failures are non-fatal — we never want to block session shutdown on this.
+set -uo pipefail
+
+input=$(cat)
+
+# Extract transcript_path and session_id from the SessionEnd hook payload
+read -r transcript_path session_id reason <<<"$(printf '%s' "$input" | python3 -c '
+import json, sys
+try:
+    d = json.load(sys.stdin)
+    print(d.get("transcript_path", ""), d.get("session_id", ""), d.get("reason", ""))
+except Exception:
+    print("", "", "")
+' 2>/dev/null)"
+
+[[ -z "$transcript_path" || ! -f "$transcript_path" ]] && exit 0
+
+root="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+pending_dir="$root/.claude/kb_source/_pending"
+
+# Cheap-session gate: count tool_use events. Skip trivial sessions.
+tool_count=$(python3 -c '
+import json, sys
+n = 0
+with open(sys.argv[1]) as f:
+    for line in f:
+        try:
+            evt = json.loads(line)
+        except Exception:
+            continue
+        msg = evt.get("message", {})
+        for block in (msg.get("content") or []):
+            if isinstance(block, dict) and block.get("type") == "tool_use":
+                n += 1
+print(n)
+' "$transcript_path" 2>/dev/null || echo 0)
+
+if [[ "${tool_count:-0}" -lt 5 ]]; then
+  exit 0  # trivial session, not worth capturing
+fi
+
+mkdir -p "$pending_dir"
+ts=$(date -u +%Y%m%dT%H%M%SZ)
+out="$pending_dir/${ts}-${session_id:-unknown}.jsonl"
+
+cp -f "$transcript_path" "$out" 2>/dev/null || exit 0
+
+# Lightweight sidecar metadata so /curate-learnings can sort/filter without re-parsing
+cat > "${out%.jsonl}.meta.json" <<EOF
+{
+  "session_id": "${session_id}",
+  "captured_at": "${ts}",
+  "reason": "${reason}",
+  "tool_use_count": ${tool_count},
+  "transcript": "${out}"
+}
+EOF
+
+exit 0
