@@ -46,6 +46,7 @@ VCS:            tag=%{vcs_tag};sha=%{vcs_sha};
 %define DEST_LCONF /usr/local/etc/metrics/
 %define DEST_CONF  /etc/metrics/
 %define DEST_LIB   /usr/local/metrics/lib
+%define DEST_DRM   /usr/share/libdrm
 
 
 %prep
@@ -58,6 +59,7 @@ mkdir -p $RPM_BUILD_ROOT/usr/lib/systemd/system/
 mkdir -p $RPM_BUILD_ROOT/usr/local/etc/metrics/slurm
 mkdir -p $RPM_BUILD_ROOT/etc/metrics/
 mkdir -p $RPM_BUILD_ROOT/usr/local/metrics/lib
+mkdir -p $RPM_BUILD_ROOT/usr/share/libdrm
 
 
 # Install binaries
@@ -81,6 +83,9 @@ install -p %{SRC_DIR}/bin/config.json  $RPM_BUILD_ROOT%{DEST_CONF}/config.json
 # copy libraries
 install -p %{SRC_DIR}/lib/* $RPM_BUILD_ROOT%{DEST_LIB}/
 
+# install amdgpu.ids for GPU marketing name resolution
+install -p -m 644 %{SRC_DIR}/data/amdgpu.ids $RPM_BUILD_ROOT%{DEST_DRM}/amdgpu.ids
+
 %files
 %defattr(-,root,root, 0755)
 %attr(644, root, root) %{DEST_SLURM}/slurm-epilog.sh
@@ -90,6 +95,7 @@ install -p %{SRC_DIR}/lib/* $RPM_BUILD_ROOT%{DEST_LIB}/
 %attr(644, root, root) %{DEST_LCONF}/gpuagent.conf
 %attr(644, root, root) %{DEST_CONF}/config.json
 %attr(644, root, root) %{DEST_LIB}/*
+%attr(644, root, root) %{DEST_DRM}/amdgpu.ids
 
 
 # binaries
