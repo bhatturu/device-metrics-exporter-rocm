@@ -1,6 +1,6 @@
 # CLAUDE.md — AMD Device Metrics Exporter
 
-Workflow rules and non-obvious gotchas for this repo. Architecture, component deep-dives, and troubleshooting walkthroughs live in [`.claude/kb_source/exporter/`](.claude/kb_source/exporter/) — load on demand, not every session.
+Workflow rules and non-obvious gotchas for this repo. Architecture, component deep-dives, and troubleshooting walkthroughs live in [`docs-internal/knowledge/exporter/`](docs-internal/knowledge/exporter/) — load on demand, not every session.
 
 ## Build & test
 
@@ -48,13 +48,17 @@ Custom skills wrap the multi-step builds — prefer them over invoking make manu
 | `GPU_PROF_*` metrics missing | ROCProfiler init failed (3-failure auto-disable kicked in) | Disable in config: `"ProfilerMetrics": {"all": false}` |
 | Config changes not taking effect | Invalid JSON | `jq . /etc/metrics/config.json` |
 
-Deeper troubleshooting tree: [`.claude/kb_source/exporter/troubleshooting.md`](.claude/kb_source/exporter/troubleshooting.md).
+Deeper troubleshooting tree: [`docs-internal/knowledge/exporter/troubleshooting.md`](docs-internal/knowledge/exporter/troubleshooting.md).
 
 ## Where to look
 
 - **Entry point:** [`cmd/exporter/main.go`](cmd/exporter/main.go)
 - **GPU client:** [`pkg/amdgpu/gpuagent/`](pkg/amdgpu/gpuagent/)
 - **NIC client:** [`pkg/amdnic/nicagent/`](pkg/amdnic/nicagent/)
-- **Architecture / deep dives:** [`.claude/kb_source/exporter/`](.claude/kb_source/exporter/)
+- **Architecture / deep dives:** [`docs-internal/knowledge/exporter/`](docs-internal/knowledge/exporter/)
 - **User-facing docs (Sphinx):** [`docs/`](docs/)
-- **PRDs:** [`.claude/prds/`](.claude/prds/)
+- **PRDs:** [`docs-internal/knowledge/prds/`](docs-internal/knowledge/prds/)
+
+## Per-PR plan file requirement
+
+Every PR to `main` requires a plan file. See [`docs-internal/knowledge/CONTRIBUTING.md`](docs-internal/knowledge/CONTRIBUTING.md).

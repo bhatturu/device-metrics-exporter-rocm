@@ -39,7 +39,7 @@ Complete workflow for adding new GPU metrics to the AMD Device Metrics Exporter.
 
 ### Phase 3: PRD Generation
 
-**File Location**: `.claude/prds/YYYY/QN/PRD-GPU-YYYYMMDD-NN-metric-name.md`
+**File Location**: `docs-internal/knowledge/prds/YYYY/QN/PRD-GPU-YYYYMMDD-NN-metric-name.md`
 
 **PRD Structure** (11 sections):
 1. Header (ID, date, status, target release)
@@ -122,7 +122,7 @@ Complete workflow for adding new GPU metrics to the AMD Device Metrics Exporter.
 | `docs/configuration/metricslist.md` | User metrics catalog |
 | `internal/metricsmap.md` | Developer mapping |
 | `example/config.json` | Config template |
-| `.claude/prds/` | PRD documents |
+| `docs-internal/knowledge/prds/` | PRD documents |
 
 ## Integration with PRD Agent
 

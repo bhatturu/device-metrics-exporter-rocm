@@ -54,15 +54,15 @@ Implement the ECC deferred errors PRD
 
 ### Option 3: From PRD directory
 ```
-Add the metrics defined in .claude/prds/PRD-001-ecc-deferred-errors.md
+Add the metrics defined in docs-internal/knowledge/prds/PRD-001-ecc-deferred-errors.md
 ```
 
-**Note**: This skill expects PRDs in `.claude/prds/` that were created by `/prd-metric-add`. For general feature requests, use `/prd-metric-add` first to generate the PRD.
+**Note**: This skill expects PRDs in `docs-internal/knowledge/prds/` that were created by `/prd-metric-add`. For general feature requests, use `/prd-metric-add` first to generate the PRD.
 
 ## What You'll Need
 
 Before running this skill:
-- ✅ A PRD document in `.claude/prds/` (use `/prd-metric-add` to create one)
+- ✅ A PRD document in `docs-internal/knowledge/prds/` (use `/prd-metric-add` to create one)
 - ✅ Understanding of what metrics to add
 - ✅ Write access to both GPUAgent submodule and main repo
 
@@ -94,7 +94,7 @@ The agent will modify these file types:
 User: "I want to implement the ECC deferred errors PRD"
 
 Agent:
-1. Reads PRD from .claude/prds/PRD-001-ecc-deferred-errors.md
+1. Reads PRD from docs-internal/knowledge/prds/PRD-001-ecc-deferred-errors.md
 2. Extracts: 19 deferred error fields across 6 ECC blocks
 3. Creates task list for all file modifications
 4. Implements changes:

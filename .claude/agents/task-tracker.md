@@ -34,7 +34,7 @@ Guide PRD implementation through 5 sequential phases with user approval gates:
 ```json
 {
   "prd_id": "PRD-GPU-TEMPERATURE-RANGE",
-  "prd_file": ".claude/prds/PRD-GPU-TEMPERATURE-RANGE.md",
+  "prd_file": "docs-internal/knowledge/prds/PRD-GPU-TEMPERATURE-RANGE.md",
   "started_at": "2026-04-08T10:30:00Z",
   "current_phase": "implementation",
   "phases": {
@@ -320,7 +320,7 @@ Example:
 Agent({
   description: "Update documentation for PRD",
   subagent_type: "doc-agent",
-  prompt: "Update user-facing documentation based on PRD at .claude/prds/PRD-GPU-TEMPERATURE-RANGE.md. 
+  prompt: "Update user-facing documentation based on PRD at docs-internal/knowledge/prds/PRD-GPU-TEMPERATURE-RANGE.md. 
           The implementation added a new GPU temperature range metric. 
           Update the metrics catalog, configuration reference, and any other relevant documentation sections."
 })

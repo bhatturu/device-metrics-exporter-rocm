@@ -15,7 +15,7 @@ PRDs serve as the design and implementation specification for adding new GPU met
 ## Directory Structure
 
 ```
-.claude/prds/
+docs-internal/knowledge/prds/
 ├── README.md                           # This file
 ├── templates/
 │   └── gpu-metric-prd-template.md     # Standard PRD template
@@ -58,7 +58,7 @@ The agent will:
 
 1. Copy the template:
    ```bash
-   cp .claude/prds/templates/gpu-metric-prd-template.md .claude/prds/2026/Q2/PRD-GPU-YYYYMMDD-NN-metric-name.md
+   cp docs-internal/knowledge/prds/templates/gpu-metric-prd-template.md docs-internal/knowledge/prds/2026/Q2/PRD-GPU-YYYYMMDD-NN-metric-name.md
    ```
 
 2. Fill in all sections following the template structure
@@ -145,7 +145,7 @@ Once implemented, move the PRD to `implemented/` directory for archival.
 | `docs/configuration/metricslist.md` | User-facing metrics catalog | ✓ Yes |
 | `docs/index.md` | Compatibility matrix | If driver/platform changed |
 | `internal/metricsmap.md` | Internal metric mappings + Critical Metrics list | ✓ Yes |
-| `.claude/kb_source/exporter/gpu-metrics-details.md` | Static/dynamic metrics, ECC injection, special cases | For ECC/special cases |
+| `docs-internal/knowledge/exporter/gpu-metrics-details.md` | Static/dynamic metrics, ECC injection, special cases | For ECC/special cases |
 | `example/config.json` | Configuration examples | ✓ Yes |
 | `docs/releasenotes.md` | Release notes | ✓ Yes |
 
@@ -207,7 +207,7 @@ When creating a PRD, ensure it includes:
 - [ ] internal/metricsmap.md mapping + Critical Metrics list (if applicable)
 - [ ] example/config.json configuration example
 - [ ] docs/index.md compatibility matrix (if driver/platform changed)
-- [ ] .claude/kb_source/exporter/gpu-metrics-details.md reference (for ECC/special cases)
+- [ ] docs-internal/knowledge/exporter/gpu-metrics-details.md reference (for ECC/special cases)
 - [ ] Release notes entry
 
 ### Validation Checks
@@ -238,5 +238,5 @@ When creating a PRD, ensure it includes:
 For questions about PRDs or the PRD Agent:
 - Review existing PRDs in this directory for examples
 - Use the PRD Agent: "help me add a GPU metric"
-- Consult the PRD template: `.claude/prds/templates/gpu-metric-prd-template.md`
+- Consult the PRD template: `docs-internal/knowledge/prds/templates/gpu-metric-prd-template.md`
 - Check the Developer Guide: `docs/developerguide.md`

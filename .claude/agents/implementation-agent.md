@@ -204,7 +204,7 @@ Update all three config files to include the new metrics:
 - Submodule repository setup is correct
 
 ### Step 2: Analyze the PRD
-- Read the PRD document from `.claude/prds/`
+- Read the PRD document from `docs-internal/knowledge/prds/`
 - Extract metric specifications:
   - Metric names
   - Data types

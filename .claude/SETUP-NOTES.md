@@ -13,14 +13,14 @@ Reference for how this repo's Claude Code config is structured and why. Based on
 | `.claude/hooks/gofmt-on-edit.sh` | PostToolUse: runs `gofmt -w` on every `.go` edit | yes |
 | `.claude/skills/<name>/SKILL.md` | Project skills (auto-discovered, uniform naming) | yes |
 | `.claude/agents/` | Project subagents | yes |
-| `.claude/kb_source/exporter/` | Deep architecture / troubleshooting docs (loaded on demand, NOT every session) | yes |
-| `.claude/prds/`, `.claude/prd_task_tracker/` | PRD workflow artifacts | yes |
+| `docs-internal/knowledge/exporter/` | Deep architecture / troubleshooting docs (loaded on demand, NOT every session) | yes |
+| `docs-internal/knowledge/prds/`, `.claude/prd_task_tracker/` | PRD workflow artifacts | yes |
 | `CLAUDE.local.md` | Personal project notes (if you create one) | **no** (gitignored) |
 
 ## Design rules we chose
 
 1. **CLAUDE.md stays small.** Anything Claude can derive from code, the README, or a SKILL.md frontmatter does NOT go here. Only non-guessable bash commands, gotchas, and "don't touch" rules.
-2. **Architecture/components live in `kb_source/`, not CLAUDE.md.** Loaded on demand by Claude when actually needed; doesn't burn context every session.
+2. **Architecture/components live in `docs-internal/knowledge/`, not CLAUDE.md.** Loaded on demand by Claude when actually needed; doesn't burn context every session.
 3. **`settings.json` is team-shared, `settings.local.json` is personal.** The shared file only allowlists read-only or local-only operations (no `git push`, no `gh pr create`, no `docker run`).
 4. **Hooks are deterministic guardrails, not advice.** Rules that MUST happen every time (gofmt, blocking generated-code edits) go in hooks, not CLAUDE.md.
 5. **Skills uniformly use `<name>/SKILL.md`.** Auto-discovery works either casing but consistency makes the listing readable.
@@ -41,7 +41,7 @@ In `.claude/settings.json`. Read-only: git status/diff/log/show/branch/ls-files/
 ## Maintenance checklist (when adding stuff later)
 
 - New skill → `.claude/skills/<name>/SKILL.md`. Use a `description` that starts with "Use when..." for reliable auto-dispatch.
-- New non-obvious gotcha → add to `CLAUDE.md` (~2 lines). If it's >5 lines, put it in `kb_source/` and link from CLAUDE.md.
+- New non-obvious gotcha → add to `CLAUDE.md` (~2 lines). If it's >5 lines, put it in `docs-internal/knowledge/` and link from CLAUDE.md.
 - New tool/CLI you want auto-approved → add to `.claude/settings.json` `permissions.allow`. Keep entries scoped (`Bash(tool subcommand:*)` not `Bash(tool *)`).
 - New deterministic rule ("always do X after Y") → write a hook in `.claude/hooks/`, register it in `settings.json`, test it with synthetic input.
 - New MCP server → `.mcp.json` at repo root (and commit it if team-wide).

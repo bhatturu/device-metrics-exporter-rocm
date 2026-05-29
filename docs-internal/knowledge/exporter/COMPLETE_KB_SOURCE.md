@@ -44,7 +44,7 @@ This file contains the complete comprehensive knowledge base content for all rem
    metricsclient --ecc-file-path /tmp/ecc.json
    ```
    - Internal to DME, reversible, testing only
-   - Complete guide: .claude/kb_source/exporter/metricsclient-tool.md
+   - Complete guide: docs-internal/knowledge/exporter/metricsclient-tool.md
 
 2. **AMDGPURAS** (Real HW injection - risky):
    - Injects real errors into GPU hardware

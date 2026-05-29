@@ -1,0 +1,131 @@
+name: pr-plan-check
+
+# Enforces the rule in CLAUDE.md: every PR must be associated with a plan
+# file under docs-internal/knowledge/. The PR satisfies this if EITHER:
+#   1. The PR body references an existing path under
+#      docs-internal/knowledge/ (the file must exist on the PR's base
+#      branch, not just in the head), OR
+#   2. The PR diff adds, modifies, or renames at least one file under
+#      docs-internal/knowledge/plans/ (excluding TEMPLATE.md/README.md).
+#
+# Configure this workflow as a REQUIRED status check on protected branches
+# so that no PR can be merged without it passing.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  plan-file-check:
+    name: Plan file required
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify plan-file association
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          echo "Base: $BASE_SHA"
+          echo "Head: $HEAD_SHA"
+
+          # Condition 1: PR body references a plan file that already
+          # exists on the PR's base branch.
+          #
+          # We extract every plain path token of the form
+          #   docs-internal/knowledge/<...>.<ext>
+          # from the PR body and, for each candidate, verify that:
+          #   (a) it contains no ".." path-traversal segments, AND
+          #   (b) it exists at the BASE revision (so a PR cannot
+          #       satisfy this condition merely by adding the file
+          #       in the same diff).
+          existing_plan_ok=0
+          matched_ref=""
+          if [ -n "${PR_BODY:-}" ]; then
+            while IFS= read -r candidate; do
+              [ -z "$candidate" ] && continue
+
+              # Reject path-traversal: any ".." component disqualifies.
+              case "$candidate" in
+                *..*)
+                  echo "Skipping '$candidate': contains '..' path-traversal segment."
+                  continue
+                  ;;
+              esac
+
+              # Existence is checked against the base revision via git,
+              # not via the worktree, so files newly added in this PR
+              # do not count toward condition 1.
+              if git cat-file -e "$BASE_SHA:$candidate" 2>/dev/null; then
+                echo "PR body references existing plan file (in base): $candidate"
+                existing_plan_ok=1
+                matched_ref="$candidate"
+                break
+              else
+                echo "PR body references '$candidate' but that file does not exist in the base revision."
+              fi
+            done < <(
+              printf '%s' "$PR_BODY" \
+                | grep -oE 'docs-internal/knowledge/[A-Za-z0-9._/-]+\.[A-Za-z0-9]+' \
+                || true
+            )
+          fi
+
+          # Condition 2: PR diff adds, modifies, or renames at least one
+          # plan file under docs-internal/knowledge/plans/.
+          #
+          # --diff-filter=AMR includes renames so that re-organising a
+          # plan still counts as a plan-file touch. TEMPLATE.md and
+          # README.md remain excluded so scaffolding edits do not
+          # satisfy the rule on their own.
+          new_plan_ok=0
+          changed_plans="$(git diff --name-only --diff-filter=AMR \
+            "$BASE_SHA" "$HEAD_SHA" -- 'docs-internal/knowledge/plans/*' \
+            | grep -vE '(^|/)(TEMPLATE|README)\.md$' || true)"
+
+          if [ -n "$changed_plans" ]; then
+            echo "PR adds, modifies, or renames plan file(s) under docs-internal/knowledge/plans/:"
+            echo "$changed_plans"
+            new_plan_ok=1
+          fi
+
+          if [ "$existing_plan_ok" -eq 1 ] || [ "$new_plan_ok" -eq 1 ]; then
+            echo "Plan-file requirement satisfied."
+            [ -n "$matched_ref" ] && echo "  via existing reference: $matched_ref"
+            exit 0
+          fi
+
+          cat >&2 <<'EOF'
+
+          ====================================================================
+          ERROR: This PR is not associated with a plan file.
+
+          Per CLAUDE.md, every PR must EITHER:
+            1. Reference an existing plan in the PR description using a path
+               under docs-internal/knowledge/ — for example:
+                 "Plan: docs-internal/knowledge/plans/2026-05-28-foo.md".
+               The referenced file must already exist on the PR's base
+               branch (you cannot self-satisfy by adding the file in the
+               same diff under a different subdirectory).
+               OR
+            2. Add, modify, or rename a plan file under
+               docs-internal/knowledge/plans/ (TEMPLATE.md and README.md
+               under that directory do not count as a plan).
+
+          See docs-internal/knowledge/plans/TEMPLATE.md for the plan format.
+          ====================================================================
+          EOF
+          exit 1

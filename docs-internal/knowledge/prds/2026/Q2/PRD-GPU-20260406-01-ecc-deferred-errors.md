@@ -773,7 +773,7 @@ Should return all 19 metrics with labels: `gpu_id`, `gpu_uuid`, `hostname`
 - **Static**: Deferred error counts do not change with normal workload activity
 - Values increment only when uncorrectable errors are deferred by hardware
 - For functional validation: Baseline read → inject error → verify counter increment
-- **Reference**: See [.claude/kb_source/exporter/gpu-metrics-details.md](../../exporter/gpu-metrics-details.md) for detailed explanation of static vs dynamic metrics
+- **Reference**: See [docs-internal/knowledge/exporter/gpu-metrics-details.md](../../exporter/gpu-metrics-details.md) for detailed explanation of static vs dynamic metrics
 
 #### 5.5.2 Metric Accuracy Validation
 
@@ -873,7 +873,7 @@ amd_gpu_ecc_deferred_total{gpu_id="0",...} 42
   ```
 - Injects mock deferred error value without touching real hardware
 - Safe, reversible, designed for automated testing
-- See: [.claude/kb_source/exporter/gpu-metrics-details.md](../../exporter/gpu-metrics-details.md) - ECC Error Injection section
+- See: [docs-internal/knowledge/exporter/gpu-metrics-details.md](../../exporter/gpu-metrics-details.md) - ECC Error Injection section
 
 **Option 2: AMDGPURAS (Real HW Injection - Risky, Platform-Specific)**
 - Tool: AMD GPU RAS (Reliability, Availability, Serviceability) utility
@@ -906,7 +906,7 @@ metricsclient reset-error --gpu-id 0
 ```
 
 **Reference Documentation:**
-- [.claude/kb_source/exporter/gpu-metrics-details.md](../../exporter/gpu-metrics-details.md) - Static vs dynamic metrics, ECC error injection procedures
+- [docs-internal/knowledge/exporter/gpu-metrics-details.md](../../exporter/gpu-metrics-details.md) - Static vs dynamic metrics, ECC error injection procedures
 - [internal/metricsmap.md](../../internal/metricsmap.md) - Critical metrics classification (deferred errors are NOT critical)
 
 #### 5.5.6 Test Automation Summary
@@ -936,7 +936,7 @@ All tests in this section should be automated for CI/CD integration:
 **Developer Documentation:**
 - [ ] `internal/metricsmap.md` - Add metric mapping rows (Exporter Metric | GPU Agent Field | amd-smi Field | Platform)
   - **Note**: Do NOT add to Critical Metrics list (these are standard metrics for monitoring, not critical for workload evaluation)
-- [ ] `.claude/kb_source/exporter/gpu-metrics-details.md` - Reference for ECC error injection procedures and static/dynamic metric classification
+- [ ] `docs-internal/knowledge/exporter/gpu-metrics-details.md` - Reference for ECC error injection procedures and static/dynamic metric classification
 
 ### 6.2 Metrics List Documentation
 
@@ -1116,7 +1116,7 @@ Requires gpuagent submodule update (git@github.com:ROCm/gpu-agent.git).
 - [ ] Metrics added to docs/configuration/metricslist.md (TBD for Hypervisor column)
 - [ ] Compatibility matrix updated in docs/index.md (if driver/platform requirements changed)
 - [ ] Mapping added to internal/metricsmap.md (NOT in Critical Metrics section)
-- [ ] Reference to .claude/kb_source/exporter/gpu-metrics-details.md for ECC special cases
+- [ ] Reference to docs-internal/knowledge/exporter/gpu-metrics-details.md for ECC special cases
 - [ ] Configuration examples added to example/config.json
 - [ ] Release notes updated
 
@@ -1175,7 +1175,7 @@ Requires gpuagent submodule update (git@github.com:ROCm/gpu-agent.git).
 - [Developer Guide](../../docs/developerguide.md) - Build and development instructions
 - [Metrics List](../../docs/configuration/metricslist.md) - User-facing metrics catalog
 - [Metrics Map](../../internal/metricsmap.md) - Internal metric mappings and critical metrics list
-- [GPU Metrics Details](../../.claude/kb_source/exporter/gpu-metrics-details.md) - Static/dynamic metrics, ECC error injection, special cases
+- [GPU Metrics Details](../../docs-internal/knowledge/exporter/gpu-metrics-details.md) - Static/dynamic metrics, ECC error injection, special cases
 
 **Code References:**
 - [pkg/amdgpu/proto/gpu.proto](../../pkg/amdgpu/proto/gpu.proto)

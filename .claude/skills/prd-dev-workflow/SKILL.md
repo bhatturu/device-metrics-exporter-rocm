@@ -28,7 +28,7 @@ Trigger this skill when:
 
 Example:
 ```
-/prd-dev-workflow .claude/prds/PRD-GPU-TEMPERATURE-RANGE.md
+/prd-dev-workflow docs-internal/knowledge/prds/PRD-GPU-TEMPERATURE-RANGE.md
 ```
 
 ### Resume Existing Workflow
@@ -93,7 +93,7 @@ Workflows can be paused and resumed later:
 ## Example Session
 
 ```
-User: /prd-dev-workflow .claude/prds/PRD-GPU-TEMPERATURE-RANGE.md
+User: /prd-dev-workflow docs-internal/knowledge/prds/PRD-GPU-TEMPERATURE-RANGE.md
 
 Agent: Starting PRD workflow for GPU Temperature Range metric...
 
