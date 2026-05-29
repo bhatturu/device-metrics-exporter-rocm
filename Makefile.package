@@ -12,7 +12,6 @@ PKG_PATH := ${TOP_DIR}/debian/usr/local/bin
 PKG_SRIOV_PATH := ${TOP_DIR}/debian-sriov/usr/local/bin
 RPM_PATH := ${TOP_DIR}/SOURCES/
 PKG_LIB_PATH := ${TOP_DIR}/debian/usr/local/metrics
-PKG_SRIOV_LOCAL_PATH := ${TOP_DIR}/debian-sriov/usr/local
 PKG_SRIOV_LIB_PATH := ${TOP_DIR}/debian-sriov/usr/local/metrics
 ROCPROFLER_SDK_ASSETS :=  ${ASSETS_PATH}/rocprofiler-sdk
 SDK_COUNTER_DEF := ${TOP_DIR}/debian/usr/local/metrics/share/rocprofiler-sdk
@@ -123,7 +122,7 @@ rpmpkg-sriov: rpmpkg-clean
 	@cp -vf $(CURDIR)/bin/metricsclient ${RPM_PACKAGE_SRIOV_DIR}/bin/
 	@cp -vf $(CURDIR)/bin/amdgpuhealth ${RPM_PACKAGE_SRIOV_DIR}/bin/
 	@cp -rvf  ${PKG_LUA_PATH}/ ${PKG_SRIOV_LUA_PATH}/../
-	@cp -vf ${LIB_CONF_PATH} ${PKG_SRIOV_LUA_PATH}/../
+	# gpuagent.conf is already in debian-sriov/usr/local/etc/metrics/ (git-tracked, includes AGA_SMI_LAZY_INIT=1)
 	@cp -vf ${LUA_PROTO} ${PKG_SRIOV_LUA_PATH}/plugin.proto
 	# copy libraries
 	@echo "Copy prebuilt libraries"
@@ -159,7 +158,10 @@ debpkg-clean:
 
 debpkg-sriov-clean:
 	rm -rf ${TOP_DIR}/bin/amdgpu-exporter-sriov*.deb
-	rm -rf ${PKG_SRIOV_PATH} ${PKG_SRIOV_LOCAL_PATH}
+	# Narrow per-step staging dirs only; do NOT wipe debian-sriov/usr/local
+	# wholesale because that path now contains the git-tracked
+	# usr/local/etc/metrics/gpuagent.conf EnvironmentFile.
+	rm -rf ${PKG_SRIOV_PATH} ${PKG_SRIOV_LIB_PATH} ${PKG_SRIOV_LUA_PATH} ${METRICS_SRIOV_CONF_DIR}
 
 debpkg: debpkg-clean
 	${MAKE} amdexporter
@@ -238,7 +240,7 @@ debpkg-sriov: debpkg-sriov-clean
 	@echo "Copy prebuilt libraries"
 	@cp -rvf ${GPUAGENT_SRIOV_LIBS}/ ${PKG_SRIOV_LIB_PATH}
 	@cp -rvf  ${PKG_LUA_PATH}/ ${PKG_SRIOV_LUA_PATH}/../
-	@cp -vf ${LIB_CONF_PATH} ${PKG_SRIOV_LUA_PATH}/../
+	# gpuagent.conf is already in debian-sriov/usr/local/etc/metrics/ (git-tracked, includes AGA_SMI_LAZY_INIT=1)
 	@echo "Copying techsupport tool"
 	@cp -vaf ${TOP_DIR}/tools/techsupport/metrics-exporter-ts.sh ${PKG_SRIOV_PATH}/
 	@chmod +x ${PKG_SRIOV_PATH}/metrics-exporter-ts.sh

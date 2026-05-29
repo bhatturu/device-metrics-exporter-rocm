@@ -88,6 +88,20 @@ This directory contains comprehensive documentation for AI agents working with t
     - Proto definitions and code generation
     - Testing and validation
 
+12b. **[pr-guidelines.md](pr-guidelines.md)** - PR guidelines (CREATED)
+    - ✅ Scope discipline (in/out, no asset or generated-file churn)
+    - ✅ PR description template (Summary / Files / Test plan / Risk)
+    - ✅ Commit message format + safety rules (no force-push, no `--no-verify`)
+    - ✅ Sensitive-data scrub table + final grep recipe
+    - ✅ Pre-flight checklist
+
+12a. **[sriov-deployment.md](sriov-deployment.md)** - SR-IOV / GIM deployment knowledge (CREATED)
+    - ✅ Required `docker run` device list (5 devices, not just `/dev/dri`)
+    - ✅ `AGA_SMI_LAZY_INIT=1` lazy SMI lifecycle — intent, where set, how to verify
+    - ✅ Metric prefix gotcha (`gpu_*` not `amd_gpu_*` in SR-IOV image)
+    - ✅ Diagnostic recipe for "exporter HTTP 200 but no metrics"
+    - ✅ Surgical single-asset refresh recipe (just `gpuagent_sriov_static.bin.gz`)
+
 12. **[partition-vm-environments.md](partition-vm-environments.md)** - Partition and VM environment metrics (CREATED)
     - ✅ Deployment environments (Hypervisor vs Baremetal)
     - ✅ GPU partition modes (SPX, CPX, DPX, QPX)
@@ -147,7 +161,7 @@ The AMD Device Metrics Exporter follows these core principles:
 
 ## Quick Reference
 
-- **Main Project:** `/home/praveen/go/src/github.com/pensando/device-metrics-exporter/`
+- **Main Project:** repo root of `pensando/device-metrics-exporter`
 - **Quick Guide:** [CLAUDE.md](../../CLAUDE.md)
 - **Example Config:** [example/config.json](../../example/config.json)
 - **Build Entry:** `make docker-shell` → `make all`
