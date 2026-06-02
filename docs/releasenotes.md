@@ -1,5 +1,12 @@
 # Release Notes
 
+## v1.5.1
+
+- **CPER Functionality Masked**
+  - CPER (Common Platform Error Record) inband-RAS fields and functionality are disabled by default for this release
+  - CPER fetch, AFID metrics, and inband-RAS error queries are not active unless explicitly enabled
+  - To enable CPER functionality, set the environment variable `AMD_METRICS_EXPORTER_ENABLE_CPER=1` (also accepts `true`, `yes`, `on`)
+
 ## v1.5.0
 
 - **Unix Domain Socket For IPC**
