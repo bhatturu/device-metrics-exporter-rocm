@@ -1,6 +1,6 @@
 module github.com/ROCm/device-metrics-exporter
 
-go 1.25.8
+go 1.25.10
 
 require (
 	github.com/alta/protopatch v0.5.3
@@ -29,12 +29,14 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools v2.2.0+incompatible
+	helm.sh/helm/v3 v3.16.1
 	k8s.io/api v0.34.0
 	k8s.io/apimachinery v0.34.0
 	k8s.io/client-go v0.34.0
 	k8s.io/cri-api v0.34.0
 	k8s.io/kubectl v0.34.0
 	k8s.io/kubelet v0.34.0
+	sigs.k8s.io/yaml v1.6.0
 )
 
 require (
@@ -201,7 +203,6 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251202230838-ff82c1b0f217 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	helm.sh/helm/v3 v3.16.1 // indirect
 	k8s.io/apiextensions-apiserver v0.31.1 // indirect
 	k8s.io/apiserver v0.34.0 // indirect
 	k8s.io/cli-runtime v0.34.0 // indirect
@@ -215,7 +216,6 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.20.1 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
-	sigs.k8s.io/yaml v1.6.0 // indirect
 )
 
 replace golang.org/x/net v0.29.0 => golang.org/x/net v0.36.0

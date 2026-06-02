@@ -1,6 +1,6 @@
 ---
 name: curate-learnings
-description: Use when the user asks to "curate learnings", "promote learnings", "process pending sessions", "review session captures", or invokes /curate-learnings. Distills pending session transcripts (captured by the SessionEnd hook into .claude/kb_source/_pending/) into curated entries in docs-internal/knowledge/learnings.md, with user approval per entry.
+description: Use when the user asks to "curate learnings", "promote learnings", "process pending sessions", "review session captures", or invokes /curate-learnings. Distills pending session transcripts (captured by the SessionEnd hook into docs-internal/knowledge/_pending/) into curated entries in docs-internal/knowledge/learnings.md, with user approval per entry.
 ---
 
 # Curate session learnings
@@ -9,8 +9,8 @@ Process pending session transcripts captured by `.claude/hooks/capture-session.s
 
 ## Inputs
 
-- `.claude/kb_source/_pending/*.jsonl` — captured session transcripts (one per non-trivial session)
-- `.claude/kb_source/_pending/*.meta.json` — sidecar metadata (session_id, timestamp, tool_use_count, reason)
+- `docs-internal/knowledge/_pending/*.jsonl` — captured session transcripts (one per non-trivial session)
+- `docs-internal/knowledge/_pending/*.meta.json` — sidecar metadata (session_id, timestamp, tool_use_count, reason)
 
 If `_pending/` is empty or missing, tell the user "no pending sessions" and exit.
 

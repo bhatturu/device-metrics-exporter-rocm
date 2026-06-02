@@ -15,6 +15,7 @@ Reference for how this repo's Claude Code config is structured and why. Based on
 | `.claude/agents/` | Project subagents | yes |
 | `docs-internal/knowledge/exporter/` | Deep architecture / troubleshooting docs (loaded on demand, NOT every session) | yes |
 | `docs-internal/knowledge/prds/`, `.claude/prd_task_tracker/` | PRD workflow artifacts | yes |
+| `docs-internal/knowledge/plans/` | Claude working plans + PR-associated plans (enforced by plan-gate CI) | yes |
 | `CLAUDE.local.md` | Personal project notes (if you create one) | **no** (gitignored) |
 
 ## Design rules we chose
@@ -36,7 +37,7 @@ In `.claude/settings.json`. Read-only: git status/diff/log/show/branch/ls-files/
 
 - **Block edits to:** root `entrypoint.sh` (jobd-owned, runtime is `docker/entrypoint.sh`), `*.pb.go`, `pkg/*/gen/**`, `vendor/**`, `libamdsmi/**`, `libgimsmi/**`. **Allow:** the `gpuagent/` submodule (actively edited).
 - **Auto-format:** `gofmt -w` on every `.go` edit. Skips silently if `gofmt` not on PATH (e.g., inside a container without Go).
-- **Session-end capture:** non-trivial sessions (≥5 tool uses) get their JSONL transcript copied to `.claude/kb_source/_pending/` (gitignored) for later review. Run `/curate-learnings` to distill durable, non-obvious findings into `.claude/kb_source/learnings.md`. Most sessions produce zero kept entries — that's correct.
+- **Session-end capture:** non-trivial sessions (≥5 tool uses) get their JSONL transcript copied to `docs-internal/knowledge/_pending/` (gitignored) for later review. Run `/curate-learnings` to distill durable, non-obvious findings into `docs-internal/knowledge/learnings.md`. Most sessions produce zero kept entries — that's correct.
 
 ## Maintenance checklist (when adding stuff later)
 

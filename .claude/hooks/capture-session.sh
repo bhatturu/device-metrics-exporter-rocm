@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SessionEnd hook: copy the session JSONL transcript into .claude/kb_source/_pending/
+# SessionEnd hook: copy the session JSONL transcript into docs-internal/knowledge/_pending/
 # for later distillation by the /curate-learnings skill.
 #
 # Cheap-session gate: skip if the session had <5 tool_use events.
@@ -21,7 +21,7 @@ except Exception:
 [[ -z "$transcript_path" || ! -f "$transcript_path" ]] && exit 0
 
 root="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-pending_dir="$root/.claude/kb_source/_pending"
+pending_dir="$root/docs-internal/knowledge/_pending"
 
 # Cheap-session gate: count tool_use events. Skip trivial sessions.
 tool_count=$(python3 -c '
