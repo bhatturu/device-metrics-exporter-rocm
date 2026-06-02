@@ -324,6 +324,14 @@ func (ga *GPUAgentIFOEClient) updateMetrics(ctx context.Context) error {
 		ifoeLabels["station_uuid"] = stationUuid
 		ifoeLabels["port_name"] = portName
 		ifoeLabels["device_uuid"] = devUuid
+		ifoeLabels["port_index"] = ""
+		if ualPort.Status != nil {
+			ifoeLabels["port_index"] = fmt.Sprintf("%d", ualPort.Status.LogicalIndex)
+		}
+		ifoeLabels["accelerator_id"] = ""
+		if dev, ok := devMap[devUuid]; ok && dev.Spec != nil {
+			ifoeLabels["accelerator_id"] = fmt.Sprintf("%d", dev.Spec.AcceleratorId)
+		}
 
 		if ualPort.Status != nil {
 			status := ualPort.Status
@@ -353,6 +361,14 @@ func (ga *GPUAgentIFOEClient) updateMetrics(ctx context.Context) error {
 		stationLabels := ga.populateLabelsFromObject(nil, nil, devMap[devUuid], true)
 		stationLabels["station_uuid"] = stationUuid
 		stationLabels["device_uuid"] = devUuid
+		stationLabels["station_index"] = ""
+		if ualStation.Status != nil {
+			stationLabels["station_index"] = fmt.Sprintf("%d", ualStation.Status.LogicalIndex)
+		}
+		stationLabels["accelerator_id"] = ""
+		if dev, ok := devMap[devUuid]; ok && dev.Spec != nil {
+			stationLabels["accelerator_id"] = fmt.Sprintf("%d", dev.Spec.AcceleratorId)
+		}
 
 		ga.setTelemetryCounters(ualStation.Stats.Stats, ga.stationStatsNameMap, stationLabels)
 	}

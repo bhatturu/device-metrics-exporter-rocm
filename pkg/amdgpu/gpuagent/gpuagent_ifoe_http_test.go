@@ -254,6 +254,9 @@ func TestGPUAgentIFOEMetricsHTTP(t *testing.T) {
 	// been missing under the pre-fix code.
 	requireSubstring(t, body, fmt.Sprintf(`station_uuid="%s"`, stationUUID))
 	requireSubstring(t, body, fmt.Sprintf(`device_uuid="%s"`, deviceUUID))
+	requireSubstring(t, body, `port_index="32"`)
+	requireSubstring(t, body, `station_index="7"`)
+	requireSubstring(t, body, `accelerator_id="42"`)
 	requireSubstring(t, body, fmt.Sprintf(`gpu_uuid="%s"`, gpuUUID))
 	requireSubstring(t, body, `cluster_name="test-cluster"`)
 	requireSubstring(t, body, `card_series="card_series_placeholder"`)
@@ -280,7 +283,8 @@ func buildIFOEDeviceResp(deviceUUID, gpuUUID string) *amdgpu.UALDeviceGetRespons
 		Response: []*amdgpu.UALDevice{
 			{
 				Spec: &amdgpu.UALDeviceSpec{
-					Id: []byte(deviceUUID),
+					Id:            []byte(deviceUUID),
+					AcceleratorId: 42,
 				},
 				Status: &amdgpu.UALDeviceStatus{
 					GPU: []byte(gpuUUID),
@@ -306,7 +310,8 @@ func buildIFOEStationResp(stationUUID, deviceUUID string) *amdgpu.UALStationGetR
 					UALDevice: []byte(deviceUUID),
 				},
 				Status: &amdgpu.UALStationStatus{
-					Name: "ual-station-1",
+					Name:         "ual-station-1",
+					LogicalIndex: 7,
 				},
 				Stats: &amdgpu.UALStationStats{
 					Stats: []*amdgpu.UALTelemetryCounter{

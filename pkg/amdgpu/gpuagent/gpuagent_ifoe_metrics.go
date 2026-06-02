@@ -408,1261 +408,1261 @@ func (ga *GPUAgentIFOEClient) initPrometheusMetrics() {
 				Name: "ifoe_num_failedover_streams",
 				Help: "Number of failed over IFOE streams",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		numPausedStreams: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_num_paused_streams",
 				Help: "Number of paused IFOE streams",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		bitErrorRate: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_bit_error_rate",
 				Help: "Bit Error Rate (BER) reported by the network port expressed as errors per 10^12 bits",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors0: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors0",
 				Help: "Total number of FEC codewords with 0 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors1: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors1",
 				Help: "Total number of FEC codewords with 1 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors2: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors2",
 				Help: "Total number of FEC codewords with 2 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors3: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors3",
 				Help: "Total number of FEC codewords with 3 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors4: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors4",
 				Help: "Total number of FEC codewords with 4 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors5: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors5",
 				Help: "Total number of FEC codewords with 5 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors6: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors6",
 				Help: "Total number of FEC codewords with 6 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors7: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors7",
 				Help: "Total number of FEC codewords with 7 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors8: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors8",
 				Help: "Total number of FEC codewords with 8 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors9: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors9",
 				Help: "Total number of FEC codewords with 9 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors10: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors10",
 				Help: "Total number of FEC codewords with 10 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors11: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors11",
 				Help: "Total number of FEC codewords with 11 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors12: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors12",
 				Help: "Total number of FEC codewords with 12 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors13: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors13",
 				Help: "Total number of FEC codewords with 13 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors14: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors14",
 				Help: "Total number of FEC codewords with 14 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrors15: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors15",
 				Help: "Total number of FEC codewords with 15 symbol errors",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		fecCodeWordSymbolErrorsUncorrectable: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_fec_codeword_symbol_errors_uncorrectable",
 				Help: "Total number of FEC codewords that are uncorrectable",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		portLinkState: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_port_link_state",
 				Help: "UAL network port link state (0=NONE, 1=UP, 2=DOWN)",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		portSpeed: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_port_speed",
 				Help: "UAL network port speed (0=NONE, 1=400G, 2=800G)",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		portLinkUpCount: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_port_link_up_count",
 				Help: "Number of times the UAL network link has come up",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		portLinkUpDurationMsec: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_port_link_up_duration_msec",
 				Help: "Total time the UAL network link has been up (msec)",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		portLinkDownDurationMsec: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_port_link_down_duration_msec",
 				Help: "Total time the UAL network link has been down (msec)",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		txTotalBytes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_tx_total_bytes",
 				Help: "Total number of bytes transmitted on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		txTotalGoodBytes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_tx_total_good_bytes",
 				Help: "Total number of good bytes transmitted on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		txTotalErrBytes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_tx_total_err_bytes",
 				Help: "Total number of bad bytes transmitted on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		txTotalPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_tx_total_packets",
 				Help: "Total number of packets transmitted on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		txTotalGoodPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_tx_total_good_packets",
 				Help: "Total number of good packets transmitted on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		txFrameError: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_tx_frame_error",
 				Help: "Total number of packets with frame error transmitted on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		txBadFCS: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_tx_bad_fcs",
 				Help: "Total number of packets with bad FCS transmitted on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxTotalBytes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_total_bytes",
 				Help: "Total number of bytes received on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxTotalGoodBytes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_total_good_bytes",
 				Help: "Total number of good bytes received on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxTotalErrBytes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_total_err_bytes",
 				Help: "Total number of bad bytes received on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxTotalPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_total_packets",
 				Help: "Total number of packets received on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxTotalGoodPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_total_good_packets",
 				Help: "Total number of good packets received on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxPacketDropped: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_packet_dropped",
 				Help: "Total number of dropped packets on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxBadFCS: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_bad_fcs",
 				Help: "Total number of packets with bad FCS received on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		stationTxRequestPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_request_packets",
 				Help: "Count of IFoE request packets transmitted on the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTxResponsePackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_response_packets",
 				Help: "Count of IFoE response packets transmitted on the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationRxRequestPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_rx_request_packets",
 				Help: "Count of IFoE request packets received on the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationRxResponsePackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_rx_response_packets",
 				Help: "Count of IFoE response packets received on the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationStreamRemapsTotal: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_stream_remaps_total",
 				Help: "Total count of streams remapped due to retransmission timeout on the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationPausedStreamsCount: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_paused_streams_count",
 				Help: "Live number of IFoE streams paused due to retransmission timeouts on the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		portLinkTrainingDurationLatestMsec: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_port_link_training_duration_latest_msec",
 				Help: "Time taken to complete link training for most recent link up (msec)",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		portLinkTrainingDurationAvgMsec: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_port_link_training_duration_avg_msec",
 				Help: "Average time taken to complete link training (msec)",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxFECCorrectedCodewords: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_fec_corrected_codewords",
 				Help: "Count of FEC corrected codewords on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxFECUncorrectedCodewords: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_fec_uncorrected_codewords",
 				Help: "Count of FEC uncorrected codewords on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		txPause: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_tx_pause",
 				Help: "Total number of 802.3x MAC pause packets transmitted",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxPause: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_pause",
 				Help: "Total number of 802.3x MAC pause packets received",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		txUserPause: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_tx_user_pause",
 				Help: "Total number of priority based pause packets transmitted",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxUserPause: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_user_pause",
 				Help: "Total number of priority based pause packets received",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxJabber: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_jabber",
 				Help: "Total number of packets longer than max length with bad FCS received",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxOversize: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_oversize",
 				Help: "Total number of packets longer than max length with good FCS received",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxTooLong: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_too_long",
 				Help: "Total number of packets longer than max length received",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxTruncated: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_truncated",
 				Help: "Total number of truncated packets received",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		txLLROkPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_tx_llr_ok_packets",
 				Help: "Count of successfully transmitted LLR packets",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxLLROkPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_llr_ok_packets",
 				Help: "Count of successfully received LLR packets",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		txLLRReplayCount: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_tx_llr_replay_count",
 				Help: "Count of LLR replay events on transmit",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		txLLRReplaysCompleted: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_tx_llr_replays_completed",
 				Help: "Count of completed LLR replays on transmit",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxLLRBadPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_llr_bad_packets",
 				Help: "Count of bad LLR packets received",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxLLRDuplSeqPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_llr_dupl_seq_packets",
 				Help: "Count of duplicate sequence number LLR packets received",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxFECBitErr0To1Lane0: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_fec_bit_err_0to1_lane0",
 				Help: "FEC bit error 0-to-1 count on lane 0",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxFECBitErr0To1Lane1: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_fec_bit_err_0to1_lane1",
 				Help: "FEC bit error 0-to-1 count on lane 1",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxFECBitErr0To1Lane2: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_fec_bit_err_0to1_lane2",
 				Help: "FEC bit error 0-to-1 count on lane 2",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxFECBitErr0To1Lane3: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_fec_bit_err_0to1_lane3",
 				Help: "FEC bit error 0-to-1 count on lane 3",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxFECBitErr1To0Lane0: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_fec_bit_err_1to0_lane0",
 				Help: "FEC bit error 1-to-0 count on lane 0",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxFECBitErr1To0Lane1: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_fec_bit_err_1to0_lane1",
 				Help: "FEC bit error 1-to-0 count on lane 1",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxFECBitErr1To0Lane2: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_fec_bit_err_1to0_lane2",
 				Help: "FEC bit error 1-to-0 count on lane 2",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxFECBitErr1To0Lane3: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_fec_bit_err_1to0_lane3",
 				Help: "FEC bit error 1-to-0 count on lane 3",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxFECSymbolErrCountLane0: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_fec_symbol_err_count_lane0",
 				Help: "FEC symbol error count on lane 0",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxFECSymbolErrCountLane1: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_fec_symbol_err_count_lane1",
 				Help: "FEC symbol error count on lane 1",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxFECSymbolErrCountLane2: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_fec_symbol_err_count_lane2",
 				Help: "FEC symbol error count on lane 2",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxFECSymbolErrCountLane3: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_fec_symbol_err_count_lane3",
 				Help: "FEC symbol error count on lane 3",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxBadCodeCount: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_bad_code_count",
 				Help: "Count of bad code received on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxStompedFCS: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_stomped_fcs",
 				Help: "Count of stomped FCS received on the UAL network port",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		stationStreamRemapsNetworkPort0: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_stream_remaps_network_port0",
 				Help: "Count of streams remapped on network port 0 of the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationStreamRemapsNetworkPort1: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_stream_remaps_network_port1",
 				Help: "Count of streams remapped on network port 1 of the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationStreamRemapsNetworkPort2: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_stream_remaps_network_port2",
 				Help: "Count of streams remapped on network port 2 of the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationStreamRemapsNetworkPort3: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_stream_remaps_network_port3",
 				Help: "Count of streams remapped on network port 3 of the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationCryptoTxKeyUpdatesSA0: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_crypto_tx_key_updates_sa0",
 				Help: "Crypto TX key updates for SA0 on the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationCryptoRxKey0UpdatesSA0: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_crypto_rx_key0_updates_sa0",
 				Help: "Crypto RX key0 updates for SA0 on the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationCryptoRxKey1UpdatesSA0: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_crypto_rx_key1_updates_sa0",
 				Help: "Crypto RX key1 updates for SA0 on the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationCryptoRxKeyDisablesSA0: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_crypto_rx_key_disables_sa0",
 				Help: "Crypto RX key disables for SA0 on the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationCryptoTxKeyUpdatesSA1: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_crypto_tx_key_updates_sa1",
 				Help: "Crypto TX key updates for SA1 on the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationCryptoRxKey0UpdatesSA1: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_crypto_rx_key0_updates_sa1",
 				Help: "Crypto RX key0 updates for SA1 on the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationCryptoRxKey1UpdatesSA1: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_crypto_rx_key1_updates_sa1",
 				Help: "Crypto RX key1 updates for SA1 on the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationCryptoRxKeyDisablesSA1: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_crypto_rx_key_disables_sa1",
 				Help: "Crypto RX key disables for SA1 on the UAL station",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		discardQRXDroppedPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_discard_q_rx_dropped_packets",
 				Help: "Discard Q Rx dropped packets",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		nonifoeQRXTotalPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_nonifoe_q_rx_total_packets",
 				Help: "Nonifoe Q Rx total packets",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		nonifoeQRXXoffTotal: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_nonifoe_q_rx_xoff_total",
 				Help: "Nonifoe Q Rx xoff total",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		nonifoeQTXTotalPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_nonifoe_q_tx_total_packets",
 				Help: "Nonifoe Q Tx total packets",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		nonifoeQTXXoffTotal: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_nonifoe_q_tx_xoff_total",
 				Help: "Nonifoe Q Tx xoff total",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		reqQRXDroppedPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_req_q_rx_dropped_packets",
 				Help: "Req Q Rx dropped packets",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		resQRXDroppedPackets: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_res_q_rx_dropped_packets",
 				Help: "Res Q Rx dropped packets",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		rxPausePacketsRcvd: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_rx_pause_packets_rcvd",
 				Help: "Rx pause packets rcvd",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		txPausePacketsSent: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_tx_pause_packets_sent",
 				Help: "Tx pause packets sent",
 			},
-			append([]string{"station_uuid", "port_name", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "port_name", "device_uuid", "port_index", "accelerator_id"}, labels...)),
 		stationRengFreeBlkOut: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_reng_free_blk_out",
 				Help: "Reng free blk out",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationRengFreePktOut: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_reng_free_pkt_out",
 				Help: "Reng free pkt out",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationRengFreeSchIn: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_reng_free_sch_in",
 				Help: "Reng free sch in",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationRengReadPktOut: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_reng_read_pkt_out",
 				Help: "Reng read pkt out",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationRengReadSchIn: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_reng_read_sch_in",
 				Help: "Reng read sch in",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationRXDecapDroppedPkts: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_rx_decap_dropped_pkts",
 				Help: "Rx decap dropped pkts",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationRXDecapRXNAKEgressReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_rx_decap_rx_nak_egress_req",
 				Help: "Rx decap Rx NAK egress req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationRXDecapRXNAKEgressRsp: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_rx_decap_rx_nak_egress_rsp",
 				Help: "Rx decap Rx NAK egress rsp",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationRXDecapTXNAKEgressReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_rx_decap_tx_nak_egress_req",
 				Help: "Rx decap Tx NAK egress req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationRXDecapTXNAKEgressRsp: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_rx_decap_tx_nak_egress_rsp",
 				Help: "Rx decap Tx NAK egress rsp",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationRXDroppedPkts: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_rx_dropped_pkts",
 				Help: "Rx dropped pkts",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationRXNonifoePkts: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_rx_nonifoe_pkts",
 				Help: "Rx nonifoe pkts",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackOrigdataCreditsConsumed: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_origdata_credits_consumed",
 				Help: "SDP Rx unpack origdata credits consumed",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackOrigdataCreditsReturned: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_origdata_credits_returned",
 				Help: "SDP Rx unpack origdata credits returned",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackRdrspCreditsConsumed: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_rdrsp_credits_consumed",
 				Help: "SDP Rx unpack rdrsp credits consumed",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackRdrspCreditsReturned: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_rdrsp_credits_returned",
 				Help: "SDP Rx unpack rdrsp credits returned",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackReqCreditsConsumed: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_req_credits_consumed",
 				Help: "SDP Rx unpack req credits consumed",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackReqCreditsReturned: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_req_credits_returned",
 				Help: "SDP Rx unpack req credits returned",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackReqCyclesStalled: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_req_cycles_stalled",
 				Help: "SDP Rx unpack req cycles stalled",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackReqCyclesStalledCnt: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_req_cycles_stalled_cnt",
 				Help: "SDP Rx unpack req cycles stalled cnt",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackReqExcessCreditsReturned: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_req_excess_credits_returned",
 				Help: "SDP Rx unpack req excess credits returned",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackReqPayloadCreditsReturned: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_req_payload_credits_returned",
 				Help: "SDP Rx unpack req payload credits returned",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackReqTotalCreditsConsumed: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_req_total_credits_consumed",
 				Help: "SDP Rx unpack req total credits consumed",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackRetagFreed: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_retag_freed",
 				Help: "SDP Rx unpack retag freed",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackRetagUsed: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_retag_used",
 				Help: "SDP Rx unpack retag used",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackRspCyclesStalled: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_rsp_cycles_stalled",
 				Help: "SDP Rx unpack rsp cycles stalled",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackRspCyclesStalledCnt: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_rsp_cycles_stalled_cnt",
 				Help: "SDP Rx unpack rsp cycles stalled cnt",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackRspExcessCreditsReturned: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_rsp_excess_credits_returned",
 				Help: "SDP Rx unpack rsp excess credits returned",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackRspPayloadCreditsReturned: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_rsp_payload_credits_returned",
 				Help: "SDP Rx unpack rsp payload credits returned",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackRspTotalCreditsConsumed: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_rsp_total_credits_consumed",
 				Help: "SDP Rx unpack rsp total credits consumed",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackWrrspCreditsConsumed: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_wrrsp_credits_consumed",
 				Help: "SDP Rx unpack wrrsp credits consumed",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPRXUnpackWrrspCreditsReturned: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_rx_unpack_wrrsp_credits_returned",
 				Help: "SDP Rx unpack wrrsp credits returned",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackAtmReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_atm_req",
 				Help: "SDP Tx pack atm req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackOrigData: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_orig_data",
 				Help: "SDP Tx pack orig data",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackOrigDataCreditConsumed: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_orig_data_credit_consumed",
 				Help: "SDP Tx pack orig data credit consumed",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackOrigDataCreditReleased: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_orig_data_credit_released",
 				Help: "SDP Tx pack orig data credit released",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackOrigDataEbEmpty: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_orig_data_eb_empty",
 				Help: "SDP Tx pack orig data eb empty",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackOrigDataEbFull: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_orig_data_eb_full",
 				Help: "SDP Tx pack orig data eb full",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackOrigDataError: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_orig_data_error",
 				Help: "SDP Tx pack orig data error",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackRdReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_rd_req",
 				Help: "SDP Tx pack rd req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackRdRsp: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_rd_rsp",
 				Help: "SDP Tx pack rd rsp",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackRdRspCreditConsumed: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_rd_rsp_credit_consumed",
 				Help: "SDP Tx pack rd rsp credit consumed",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackRdRspCreditReleased: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_rd_rsp_credit_released",
 				Help: "SDP Tx pack rd rsp credit released",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackRdRspDataError: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_rd_rsp_data_error",
 				Help: "SDP Tx pack rd rsp data error",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackRdRspEbEmpty: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_rd_rsp_eb_empty",
 				Help: "SDP Tx pack rd rsp eb empty",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackRdRspEbFull: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_rd_rsp_eb_full",
 				Help: "SDP Tx pack rd rsp eb full",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackRdRspPclEmpty: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_rd_rsp_pcl_empty",
 				Help: "SDP Tx pack rd rsp pcl empty",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackRdRspPclFull: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_rd_rsp_pcl_full",
 				Help: "SDP Tx pack rd rsp pcl full",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackReqCreditConsumed: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_req_credit_consumed",
 				Help: "SDP Tx pack req credit consumed",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackReqCreditReleased: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_req_credit_released",
 				Help: "SDP Tx pack req credit released",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackReqEbEmpty: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_req_eb_empty",
 				Help: "SDP Tx pack req eb empty",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackReqEbFull: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_req_eb_full",
 				Help: "SDP Tx pack req eb full",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackReqPcl: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_req_pcl",
 				Help: "SDP Tx pack req pcl",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackReqPclEmpty: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_req_pcl_empty",
 				Help: "SDP Tx pack req pcl empty",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackReqPclFull: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_req_pcl_full",
 				Help: "SDP Tx pack req pcl full",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackReqPoolEmpty: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_req_pool_empty",
 				Help: "SDP Tx pack req pool empty",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackReqPoolFull: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_req_pool_full",
 				Help: "SDP Tx pack req pool full",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackRspPoolEmpty: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_rsp_pool_empty",
 				Help: "SDP Tx pack rsp pool empty",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackRspPoolFull: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_rsp_pool_full",
 				Help: "SDP Tx pack rsp pool full",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackWrReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_wr_req",
 				Help: "SDP Tx pack wr req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackWrRsp: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_wr_rsp",
 				Help: "SDP Tx pack wr rsp",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackWrRspCreditConsumed: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_wr_rsp_credit_consumed",
 				Help: "SDP Tx pack wr rsp credit consumed",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackWrRspCreditReleased: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_wr_rsp_credit_released",
 				Help: "SDP Tx pack wr rsp credit released",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackWrRspEbEmpty: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_wr_rsp_eb_empty",
 				Help: "SDP Tx pack wr rsp eb empty",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackWrRspEbFull: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_wr_rsp_eb_full",
 				Help: "SDP Tx pack wr rsp eb full",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackWrRspPclEmpty: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_wr_rsp_pcl_empty",
 				Help: "SDP Tx pack wr rsp pcl empty",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationSDPTXPackWrRspPclFull: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_sdp_tx_pack_wr_rsp_pcl_full",
 				Help: "SDP Tx pack wr rsp pcl full",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXEncapPktEgressXrsecNport0: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_encap_pkt_egress_xrsec_nport_0",
 				Help: "Tx encap pkt egress xrsec nport 0",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXEncapPktEgressXrsecNport1: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_encap_pkt_egress_xrsec_nport_1",
 				Help: "Tx encap pkt egress xrsec nport 1",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXEncapPktEgressXrsecNport2: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_encap_pkt_egress_xrsec_nport_2",
 				Help: "Tx encap pkt egress xrsec nport 2",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXEncapPktEgressXrsecNport3: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_encap_pkt_egress_xrsec_nport_3",
 				Help: "Tx encap pkt egress xrsec nport 3",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXEncapStallEgressXrsec: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_encap_stall_egress_xrsec",
 				Help: "Tx encap stall egress xrsec",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXEncapStallIngress: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_encap_stall_ingress",
 				Help: "Tx encap stall ingress",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXNonifoePkts: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_nonifoe_pkts",
 				Help: "Tx nonifoe pkts",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXSchedActiveRXACKPkts: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_sched_active_rx_ack_pkts",
 				Help: "Tx sched active Rx ACK pkts",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXSchedActiveStreams: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_sched_active_streams",
 				Help: "Tx sched active streams",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXSchedBoostedPriStreams: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_sched_boosted_pri_streams",
 				Help: "Tx sched boosted pri streams",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXSchedEmptyQueueStreams: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_sched_empty_queue_streams",
 				Help: "Tx sched empty queue streams",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXSchedEmptySendQueueStreams: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_sched_empty_send_queue_streams",
 				Help: "Tx sched empty send queue streams",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXSchedPausedStreams: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_sched_paused_streams",
 				Help: "Tx sched paused streams",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXSchedReqPkts: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_sched_req_pkts",
 				Help: "Tx sched req pkts",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationTXSchedResPkts: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_tx_sched_res_pkts",
 				Help: "Tx sched res pkts",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengBstateFreeBlkDelayReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_bstate_free_blk_delay_req",
 				Help: "Weng bstate free blk delay req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengBstateFreeBlkDelayRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_bstate_free_blk_delay_res",
 				Help: "Weng bstate free blk delay res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionChainDelayReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_chain_delay_req",
 				Help: "Weng eviction chain delay req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionChainDelayRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_chain_delay_res",
 				Help: "Weng eviction chain delay res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionExpiryReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_expiry_req",
 				Help: "Weng eviction expiry req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionExpiryRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_expiry_res",
 				Help: "Weng eviction expiry res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionForceChainDelayReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_force_chain_delay_req",
 				Help: "Weng eviction force chain delay req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionForceChainDelayRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_force_chain_delay_res",
 				Help: "Weng eviction force chain delay res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionForceHoldDelayReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_force_hold_delay_req",
 				Help: "Weng eviction force hold delay req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionForceHoldDelayRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_force_hold_delay_res",
 				Help: "Weng eviction force hold delay res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionForceReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_force_req",
 				Help: "Weng eviction force req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionForceRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_force_res",
 				Help: "Weng eviction force res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionMtuHoldDelayReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_mtu_hold_delay_req",
 				Help: "Weng eviction mtu hold delay req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionMtuHoldDelayRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_mtu_hold_delay_res",
 				Help: "Weng eviction mtu hold delay res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionMtuReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_mtu_req",
 				Help: "Weng eviction mtu req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionMtuRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_mtu_res",
 				Help: "Weng eviction mtu res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionPayloadReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_payload_req",
 				Help: "Weng eviction payload req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengEvictionPayloadRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_eviction_payload_res",
 				Help: "Weng eviction payload res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengOpSDPChainReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_op_sdp_chain_req",
 				Help: "Weng op SDP chain req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengOpSDPChainRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_op_sdp_chain_res",
 				Help: "Weng op SDP chain res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengOpSDPForceReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_op_sdp_force_req",
 				Help: "Weng op SDP force req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengOpSDPForceRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_op_sdp_force_res",
 				Help: "Weng op SDP force res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengOpSDPLengthReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_op_sdp_length_req",
 				Help: "Weng op SDP length req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengOpSDPLengthRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_op_sdp_length_res",
 				Help: "Weng op SDP length res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengOpSDPPktOpenReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_op_sdp_pkt_open_req",
 				Help: "Weng op SDP pkt open req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengOpSDPPktOpenRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_op_sdp_pkt_open_res",
 				Help: "Weng op SDP pkt open res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengOpSDPReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_op_sdp_req",
 				Help: "Weng op SDP req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengOpSDPRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_op_sdp_res",
 				Help: "Weng op SDP res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengOpSDPWordReq: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_op_sdp_word_req",
 				Help: "Weng op SDP word req",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 		stationWengOpSDPWordRes: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "ifoe_station_weng_op_sdp_word_res",
 				Help: "Weng op SDP word res",
 			},
-			append([]string{"station_uuid", "device_uuid"}, labels...)),
+			append([]string{"station_uuid", "device_uuid", "station_index", "accelerator_id"}, labels...)),
 	}
 	ga.initFieldMetricsMap()
 	ga.initTelemetryNameMaps()
