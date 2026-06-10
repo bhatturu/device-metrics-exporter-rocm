@@ -120,8 +120,8 @@ AMDSMI_REPO   ?= https://github.com/AMD-ROCm-Internal/rocm-systems.git
 AMDSMI_BRANCH ?= amd-npi
 AMDSMI_COMMIT ?= f09c4481e96cec4c5a8457e6c1864b4c0db0b8a1
 AMDSMI_SUBDIR ?= projects/amdsmi
-GIMSMI_BRANCH ?= mainline
-GIMSMI_COMMIT ?= mainline/8.7.0.K
+GIMSMI_BRANCH ?= release/8.7.0.K-rc
+GIMSMI_COMMIT ?= 8.7.0.K
 GPUAGENT_BRANCH ?= main
 GPUAGENT_COMMIT ?= 534af3b
 
