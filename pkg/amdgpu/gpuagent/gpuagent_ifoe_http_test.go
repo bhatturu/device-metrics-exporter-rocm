@@ -257,6 +257,8 @@ func TestGPUAgentIFOEMetricsHTTP(t *testing.T) {
 	requireSubstring(t, body, `port_index="32"`)
 	requireSubstring(t, body, `station_index="7"`)
 	requireSubstring(t, body, `accelerator_id="42"`)
+	requireSubstring(t, body, `vpod_id="7"`)
+	requireSubstring(t, body, `physical_pod_id="3"`)
 	requireSubstring(t, body, fmt.Sprintf(`gpu_uuid="%s"`, gpuUUID))
 	requireSubstring(t, body, `cluster_name="test-cluster"`)
 	requireSubstring(t, body, `card_series="card_series_placeholder"`)
@@ -270,11 +272,277 @@ func TestGPUAgentIFOEMetricsHTTP(t *testing.T) {
 	requireSubstring(t, body, `vbios_version="4.5.6"`)
 }
 
+// TestGPUAgentIFOEHotReloadLabelChange verifies that changing the IFOE label
+// configuration at runtime (hot-reload via InitConfigs) does not corrupt the
+// Prometheus GaugeVec label cardinality and does not panic on the subsequent
+// scrape.
+//
+// Background: prometheus/client_golang v1.22.0 stores the label-name slice
+// passed to NewGaugeVec without copying it (UnconstrainedLabels.compile()
+// assigns names: uls directly). If append(sharedSlice, labels...) is used
+// and the shared backing array is mutated between calls, the Desc's internal
+// names are silently corrupted, causing an "inconsistent label cardinality"
+// panic on the next .With() call. The inline []string{...} literal pattern
+// used in initPrometheusMetrics is safe because each append on a fresh
+// literal always allocates a new backing array.
+// This test guards that invariant across a full hot-reload cycle: minimal →
+// rich → minimal, each time asserting no panic and correct label presence.
+//
+// Hot-reload mechanics: production calls mh.InitConfig() which creates a
+// fresh prometheus.Registry and calls InitConfigs() on every registered
+// client. We replicate that by creating a single agent, then calling
+// InitConfigs() directly after each LoadConfig so the new GaugeVecs are
+// created with the updated label set and registered into a fresh registry.
+func TestGPUAgentIFOEHotReloadLabelChange(t *testing.T) {
+	logger.Init(true)
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	deviceUUID := uuid.New().String()
+	stationUUID := uuid.New().String()
+	portUUID := uuid.New().String()
+	gpuUUID := uuid.New().String()
+
+	ualMock := mock_gen.NewMockUALSvcClient(ctrl)
+	ualMock.EXPECT().UALDeviceGet(gomock.Any(), gomock.Any()).
+		Return(buildIFOEDeviceResp(deviceUUID, gpuUUID), nil).AnyTimes()
+	ualMock.EXPECT().UALStationGet(gomock.Any(), gomock.Any()).
+		Return(buildIFOEStationResp(stationUUID, deviceUUID), nil).AnyTimes()
+	ualMock.EXPECT().UALNetworkPortGet(gomock.Any(), gomock.Any()).
+		Return(buildIFOEPortResp(portUUID, stationUUID), nil).AnyTimes()
+
+	// reloadAndScrape simulates a hot-reload cycle by building a fresh
+	// prometheus registry, calling InitConfigs on the IFOE client with the
+	// new label config, then serving /metrics. This is the correct sequence
+	// because mh.InitConfig calls RefreshConfig which resets any prior
+	// in-memory config (reads from disk; empty path → defaults), so we must
+	// build the registry and register metrics from scratch using a fresh
+	// MetricsHandler per round.
+	//
+	// Each round builds its own mh + agent to get a clean registry. The mock
+	// UAL client is re-injected each time. This faithfully replicates the
+	// production hot-reload: new registry, same config path, fresh GaugeVecs.
+	reloadAndScrape := func(ifoeCfg *exportermetrics.IFOEMetricConfig) string {
+		t.Helper()
+
+		roundCfg := config.NewConfigHandler("", config.GPUAgentConfig{GrpcPort: globals.GPUAgentPort})
+		roundMH, mhErr := metricsutil.NewMetrics(roundCfg)
+		assert.NilError(t, mhErr)
+		roundMH.InitConfig(context.Background())
+		assert.NilError(t, roundCfg.LoadConfig(&exportermetrics.MetricConfig{IFOEConfig: ifoeCfg}))
+
+		roundGA := NewAgent(roundMH,
+			WithK8sClient(nil),
+			WithK8sSchedulerClient(nil),
+			WithSlurmClient(false),
+			WithGPUMonitoring(false),
+			WithIFOEMonitoring(true),
+		)
+		assert.Assert(t, roundGA != nil)
+		defer roundGA.Close()
+		assert.NilError(t, roundGA.Init())
+
+		var roundIfoe *GPUAgentIFOEClient
+		for _, c := range roundGA.clients {
+			if c.GetDeviceType() == globals.IFOEDevice {
+				roundIfoe = c.(*GPUAgentIFOEClient)
+				break
+			}
+		}
+		assert.Assert(t, roundIfoe != nil)
+		roundIfoe.ualClient = ualMock
+
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("InitConfigs panicked on hot-reload: %v", r)
+				}
+			}()
+			assert.NilError(t, roundIfoe.InitConfigs())
+		}()
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatalf("UpdateStaticMetrics panicked on hot-reload: %v", r)
+				}
+			}()
+			assert.NilError(t, roundIfoe.UpdateStaticMetrics(context.Background()))
+		}()
+
+		reg := roundMH.GetRegistry()
+		mux := http.NewServeMux()
+		mux.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+			func() {
+				defer func() {
+					if rv := recover(); rv != nil {
+						t.Fatalf("UpdateMetrics panicked during scrape: %v", rv)
+					}
+				}()
+				_ = roundMH.UpdateMetrics(r.Context())
+			}()
+			promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}).ServeHTTP(w, r)
+		})
+		ts := httptest.NewServer(mux)
+		defer ts.Close()
+
+		resp, err := http.Get(ts.URL + "/metrics")
+		assert.NilError(t, err)
+		defer resp.Body.Close()
+		assert.Equal(t, resp.StatusCode, http.StatusOK)
+		bodyBytes, err := io.ReadAll(resp.Body)
+		assert.NilError(t, err)
+		return string(bodyBytes)
+	}
+
+	// Round 1: minimal config — only mandatory fixed labels.
+	body1 := reloadAndScrape(&exportermetrics.IFOEMetricConfig{})
+	requireSubstring(t, body1, `accelerator_id="42"`)
+	requireSubstring(t, body1, `vpod_id="7"`)
+	requireSubstring(t, body1, `physical_pod_id="3"`)
+	if strings.Contains(body1, `card_series=`) {
+		t.Errorf("round 1: card_series must not appear in minimal config")
+	}
+	if strings.Contains(body1, `driver_version=`) {
+		t.Errorf("round 1: driver_version must not appear in minimal config")
+	}
+
+	// Round 2: add optional labels — GaugeVecs rebuilt with wider cardinality.
+	// If append(sharedSlice, labels...) shared backing array with a prior call,
+	// the Prometheus Desc would be silently corrupted here (names field mutated)
+	// and the subsequent .With() call in updateMetrics would panic.
+	body2 := reloadAndScrape(&exportermetrics.IFOEMetricConfig{
+		Labels: []string{"CARD_SERIES", "DRIVER_VERSION"},
+	})
+	requireSubstring(t, body2, `accelerator_id="42"`)
+	requireSubstring(t, body2, `vpod_id="7"`)
+	requireSubstring(t, body2, `physical_pod_id="3"`)
+	requireSubstring(t, body2, `card_series="card_series_placeholder"`)
+	requireSubstring(t, body2, `driver_version="1.2.3"`)
+
+	// Round 3: revert to minimal — GaugeVecs rebuilt with narrower cardinality.
+	// A second corruption window: the narrower append result may alias into the
+	// wider backing array and observe stale label names written by round 2.
+	body3 := reloadAndScrape(&exportermetrics.IFOEMetricConfig{})
+	requireSubstring(t, body3, `accelerator_id="42"`)
+	requireSubstring(t, body3, `vpod_id="7"`)
+	requireSubstring(t, body3, `physical_pod_id="3"`)
+	if strings.Contains(body3, `card_series=`) {
+		t.Errorf("round 3: card_series must not appear after reload back to minimal")
+	}
+}
+
 func requireSubstring(t *testing.T, haystack, needle string) {
 	t.Helper()
 	if !strings.Contains(haystack, needle) {
 		t.Fatalf("/metrics body missing expected substring %q", needle)
 	}
+}
+
+// TestGPUAgentIFOEVPodZeroValues verifies that when gpuagent returns VPodId=0
+// and PhysicalPodId=0 (the proto default, e.g. when the agent predates the
+// new fields), the labels still appear in /metrics with value "0" rather than
+// being absent or empty. This guards against a regression where fmt.Sprintf
+// of a zero uint32 might be handled differently from a non-zero value.
+func TestGPUAgentIFOEVPodZeroValues(t *testing.T) {
+	logger.Init(true)
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	deviceUUID := uuid.New().String()
+	stationUUID := uuid.New().String()
+	portUUID := uuid.New().String()
+	gpuUUID := uuid.New().String()
+
+	// Device with VPodId=0 and PhysicalPodId=0 (proto zero-defaults).
+	zeroDevice := &amdgpu.UALDeviceGetResponse{
+		ApiStatus: amdgpu.ApiStatus_API_STATUS_OK,
+		Response: []*amdgpu.UALDevice{
+			{
+				Spec: &amdgpu.UALDeviceSpec{
+					Id:            []byte(deviceUUID),
+					AcceleratorId: 1,
+					VPodId:        0,
+					PhysicalPodId: 0,
+				},
+				Status: &amdgpu.UALDeviceStatus{
+					GPU: []byte(gpuUUID),
+					Version: &amdgpu.UALDeviceVersionInfo{
+						UALLibVersion:   &amdgpu.SemanticVersion{Major: 1, Minor: 0, Patch: 0},
+						FirmwareVersion: &amdgpu.SemanticVersion{Major: 1, Minor: 0, Patch: 0},
+					},
+				},
+				Stats: &amdgpu.UALDeviceStats{},
+			},
+		},
+	}
+
+	ualMock := mock_gen.NewMockUALSvcClient(ctrl)
+	ualMock.EXPECT().UALDeviceGet(gomock.Any(), gomock.Any()).Return(zeroDevice, nil).AnyTimes()
+	ualMock.EXPECT().UALStationGet(gomock.Any(), gomock.Any()).
+		Return(buildIFOEStationResp(stationUUID, deviceUUID), nil).AnyTimes()
+	ualMock.EXPECT().UALNetworkPortGet(gomock.Any(), gomock.Any()).
+		Return(buildIFOEPortResp(portUUID, stationUUID), nil).AnyTimes()
+
+	cfgHandler := config.NewConfigHandler("", config.GPUAgentConfig{GrpcPort: globals.GPUAgentPort})
+	mh, err := metricsutil.NewMetrics(cfgHandler)
+	assert.NilError(t, err)
+	mh.InitConfig(context.Background())
+	assert.NilError(t, cfgHandler.LoadConfig(&exportermetrics.MetricConfig{IFOEConfig: &exportermetrics.IFOEMetricConfig{}}))
+
+	ga := NewAgent(mh,
+		WithK8sClient(nil),
+		WithK8sSchedulerClient(nil),
+		WithSlurmClient(false),
+		WithGPUMonitoring(false),
+		WithIFOEMonitoring(true),
+	)
+	assert.Assert(t, ga != nil)
+	defer ga.Close()
+	assert.NilError(t, ga.Init())
+
+	var ifoeClient *GPUAgentIFOEClient
+	for _, c := range ga.clients {
+		if c.GetDeviceType() == globals.IFOEDevice {
+			ifoeClient = c.(*GPUAgentIFOEClient)
+			break
+		}
+	}
+	assert.Assert(t, ifoeClient != nil)
+	ifoeClient.ualClient = ualMock
+	assert.NilError(t, ifoeClient.InitConfigs())
+
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				t.Fatalf("UpdateStaticMetrics panicked with zero vpod/physicalpod: %v", r)
+			}
+		}()
+		assert.NilError(t, ifoeClient.UpdateStaticMetrics(context.Background()))
+	}()
+
+	reg := mh.GetRegistry()
+	mux := http.NewServeMux()
+	mux.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		_ = mh.UpdateMetrics(r.Context())
+		promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}).ServeHTTP(w, r)
+	})
+	ts := httptest.NewServer(mux)
+	defer ts.Close()
+
+	resp, err := http.Get(ts.URL + "/metrics")
+	assert.NilError(t, err)
+	defer resp.Body.Close()
+	assert.Equal(t, resp.StatusCode, http.StatusOK)
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	assert.NilError(t, err)
+	body := string(bodyBytes)
+
+	// Zero-valued vpod_id and physical_pod_id must still appear as "0", not absent.
+	requireSubstring(t, body, `vpod_id="0"`)
+	requireSubstring(t, body, `physical_pod_id="0"`)
 }
 
 func buildIFOEDeviceResp(deviceUUID, gpuUUID string) *amdgpu.UALDeviceGetResponse {
@@ -285,6 +553,8 @@ func buildIFOEDeviceResp(deviceUUID, gpuUUID string) *amdgpu.UALDeviceGetRespons
 				Spec: &amdgpu.UALDeviceSpec{
 					Id:            []byte(deviceUUID),
 					AcceleratorId: 42,
+					VPodId:        7,
+					PhysicalPodId: 3,
 				},
 				Status: &amdgpu.UALDeviceStatus{
 					GPU: []byte(gpuUUID),

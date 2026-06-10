@@ -2,6 +2,25 @@
 
 This section provides an overview of the IFOE statistics available using the Device Metrics Exporter.
 
+## IFOE Metric Labels
+
+Every IFOE metric series carries a set of identification labels. The following table lists each label name (as it appears in Prometheus output), which metric groups it applies to, and a description.
+
+| Label | Applies to | Description |
+| --- | --- | --- |
+| `hostname` | All IFOE metrics | Hostname of the node running the exporter |
+| `gpu_uuid` | All IFOE metrics | UUID of the GPU associated with the UAL device |
+| `device_uuid` | Port and station metrics | UUID of the UAL device |
+| `station_uuid` | Port and station metrics | UUID of the UAL station |
+| `port_name` | Port metrics only | Human-readable name of the network port |
+| `port_index` | Port metrics only | Logical index of the network port within its station |
+| `station_index` | Station metrics only | Logical index of the UAL station within its device |
+| `accelerator_id` | Port and station metrics | Local accelerator ID assigned to the UAL device |
+| `vpod_id` | Port and station metrics | vPod identifier — logical isolation domain this accelerator belongs to |
+| `physical_pod_id` | Port and station metrics | Physical pod identifier — physical fabric placement of this accelerator |
+
+> **Note:** All labels in the table above are always present in the Prometheus output and cannot be removed. `hostname` and `gpu_uuid` correspond to the `HOSTNAME` and `GPU_UUID` keys in the `IFOEConfig.Labels` config array. The remaining labels (`device_uuid`, `station_uuid`, `port_name`, `port_index`, `station_index`, `accelerator_id`, `vpod_id`, `physical_pod_id`) are fixed structural labels added by the exporter regardless of config. Additional optional labels (for example `CARD_MODEL`, `DRIVER_VERSION`, `CLUSTER_NAME`) can be enabled via the `Labels` and `CustomLabels` fields in `IFOEConfig`.
+
 ## Supported IFOE Metrics List
 
 The following table contains a full list of IFOE Metrics that are available using the Device Metrics Exporter.

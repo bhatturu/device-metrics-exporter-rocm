@@ -615,6 +615,10 @@ message UALDeviceSpec {
   UALDeviceCapability   Capability              = 11;
   // UAL loopback mode
   UALDeviceLoopbackMode LoopbackMode            = 12;
+  // vPod identifier — logical isolation domain this accelerator belongs to
+  uint32                VPodId                  = 13;
+  // physical pod identifier — physical fabric placement of this accelerator
+  uint32                PhysicalPodId           = 14;
 }
 
 // UAL device version information

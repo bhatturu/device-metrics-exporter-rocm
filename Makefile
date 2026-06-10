@@ -493,7 +493,7 @@ clean-docs:
 	rm -rf $(BUILD_DIR)
 
 DOCS_MARKDOWNLINTCONFIG ?= docs/.markdownlint-cli2.yaml
-DOCS_MD_GLOB ?= "**/*.md" "!docs/design/**"
+DOCS_MD_GLOB ?= "**/*.md" "!docs/design/**" "!docs-internal/**" "!BUILD/**" "!BUILDROOT/**" "!.github/**" "!.cline_storage/**"
 DOCS_SPELLCHECK_CONFIG ?= .spellcheck.yaml
 
 .PHONY: docs-lint-markdown

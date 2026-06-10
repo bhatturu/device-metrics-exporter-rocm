@@ -329,8 +329,12 @@ func (ga *GPUAgentIFOEClient) updateMetrics(ctx context.Context) error {
 			ifoeLabels["port_index"] = fmt.Sprintf("%d", ualPort.Status.LogicalIndex)
 		}
 		ifoeLabels["accelerator_id"] = ""
+		ifoeLabels["vpod_id"] = ""
+		ifoeLabels["physical_pod_id"] = ""
 		if dev, ok := devMap[devUuid]; ok && dev.Spec != nil {
 			ifoeLabels["accelerator_id"] = fmt.Sprintf("%d", dev.Spec.AcceleratorId)
+			ifoeLabels["vpod_id"] = fmt.Sprintf("%d", dev.Spec.VPodId)
+			ifoeLabels["physical_pod_id"] = fmt.Sprintf("%d", dev.Spec.PhysicalPodId)
 		}
 
 		if ualPort.Status != nil {
@@ -366,8 +370,12 @@ func (ga *GPUAgentIFOEClient) updateMetrics(ctx context.Context) error {
 			stationLabels["station_index"] = fmt.Sprintf("%d", ualStation.Status.LogicalIndex)
 		}
 		stationLabels["accelerator_id"] = ""
+		stationLabels["vpod_id"] = ""
+		stationLabels["physical_pod_id"] = ""
 		if dev, ok := devMap[devUuid]; ok && dev.Spec != nil {
 			stationLabels["accelerator_id"] = fmt.Sprintf("%d", dev.Spec.AcceleratorId)
+			stationLabels["vpod_id"] = fmt.Sprintf("%d", dev.Spec.VPodId)
+			stationLabels["physical_pod_id"] = fmt.Sprintf("%d", dev.Spec.PhysicalPodId)
 		}
 
 		ga.setTelemetryCounters(ualStation.Stats.Stats, ga.stationStatsNameMap, stationLabels)

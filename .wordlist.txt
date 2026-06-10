@@ -365,3 +365,7 @@ wr
 wrrsp
 CPER
 args
+Hostname
+UAL
+UUID
+vPod

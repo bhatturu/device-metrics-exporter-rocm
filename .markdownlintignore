@@ -29,8 +29,18 @@ CLAUDE.md
 # §"Claude / agent shared knowledge in repo".
 docs/design/**
 
+# Internal knowledge base, plans, and agent-pipeline artifacts.
+docs-internal/
+
 # Internal metrics map (auto-generated table)
 internal/
 
 # Build/output trees
 build/
+BUILD/**
+BUILDROOT/**
+
+# AI tool artifacts and IDE config
+.cline_storage/**
+.github/**
+
