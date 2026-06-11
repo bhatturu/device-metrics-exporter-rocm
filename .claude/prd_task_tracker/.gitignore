@@ -1,0 +1,6 @@
+# Ignore all workflow status files
+*-status.json
+
+# Keep the README
+!README.md
+!.gitignore

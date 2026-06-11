@@ -15,11 +15,9 @@ by `gpuctl` on a remote system.
 **Output:** `IFOE_EXPORTER_<HOSTNAME>_SUMMARY.md` in CWD with a PASS/FAIL verdict.
 
 Read `ServerPort` from `/etc/metrics/config.json` on the target before
-issuing any curl commands — never assume port 5000 (see project memory
-`reference_test_host_ifoe_epic.md` and `test-port-allocation` skill for
-the rationale). All metric greps use the `amd_*` prefix from
-`MetricsFieldPrefix` — never `^ifoe_` or `^gpu_ual_ifoe_` (see
-`project_metric_prefix.md`).
+issuing any curl commands — never assume port 5000. All metric greps use
+the `amd_*` prefix from `MetricsFieldPrefix` — never `^ifoe_` or
+`^gpu_ual_ifoe_` (see `project_metric_prefix.md`).
 
 ---
 
@@ -146,7 +144,5 @@ without the domain suffix.
 
 ## Cross-references
 
-- Slash command (same content): `.claude/commands/validate-ifoe-exporter.md` — points at this skill as canonical
-- Port discovery rationale: `.claude/skills/test-port-allocation.md`
+- Slash command (same content): `.claude/commands/validate-ifoe-exporter.md`
 - Metric prefix convention: `memory/project_metric_prefix.md`
-- Related skills (full lifecycle): `install-ual-package`, `deploy-exporter-container`

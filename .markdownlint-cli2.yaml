@@ -15,6 +15,7 @@ ignores:
 - "README.md"
 - "grafana/README.md"
 - "internal/**"
+- "docs-internal/**"
 
 # Custom configuration for specific files
 customRules:

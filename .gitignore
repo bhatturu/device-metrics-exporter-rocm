@@ -24,6 +24,11 @@ BUILDROOT/*
 .cline_storage
 .vscode
 
+# Claude Code: personal/machine-local config only — shared config lives in .claude/settings.json and CLAUDE.md
+.claude/settings.local.json
+CLAUDE.local.md
+# Pending session transcripts captured by capture-session.sh — local-only, processed by /curate-learnings
+docs-internal/knowledge/_pending/
 # Per-engineer codie config (absolute paths to local workspace)
 codie-config.yaml
 # Per-session codie progress / handoff files

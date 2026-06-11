@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PRD Workflow Status",
+  "description": "Schema for PRD development workflow status tracking",
+  "type": "object",
+  "required": ["prd_id", "prd_file", "started_at", "current_phase", "phases", "metadata"],
+  "properties": {
+    "prd_id": {
+      "type": "string",
+      "description": "Unique PRD identifier (e.g., PRD-GPU-TEMPERATURE-RANGE)",
+      "pattern": "^PRD-[A-Z0-9-]+$"
+    },
+    "prd_file": {
+      "type": "string",
+      "description": "Path to PRD file relative to repository root"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when workflow started"
+    },
+    "current_phase": {
+      "type": "string",
+      "enum": ["implementation", "testing", "building", "verification", "documentation", "completed"],
+      "description": "Current active phase of the workflow"
+    },
+    "phases": {
+      "type": "object",
+      "required": ["implementation", "testing", "building", "verification", "documentation"],
+      "properties": {
+        "implementation": {
+          "$ref": "#/definitions/phase",
+          "description": "Implementation and development phase"
+        },
+        "testing": {
+          "$ref": "#/definitions/testingPhase",
+          "description": "Test planning and development phase"
+        },
+        "building": {
+          "$ref": "#/definitions/buildingPhase",
+          "description": "Building phase"
+        },
+        "verification": {
+          "$ref": "#/definitions/verificationPhase",
+          "description": "Verification phase"
+        },
+        "documentation": {
+          "$ref": "#/definitions/documentationPhase",
+          "description": "Documentation update phase"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "prd_type": {
+          "type": "string",
+          "description": "Type of PRD (gpu_metric, nic_feature, general, etc.)"
+        },
+        "components_affected": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["gpuagent", "exporter", "nicagent", "ualagent", "docs", "tests"]
+          },
+          "description": "List of project components affected by this PRD"
+        },
+        "commits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of commit SHAs created during workflow"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "phase": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pending", "in_progress", "completed", "blocked", "skipped"],
+          "description": "Current status of this phase"
+        },
+        "started_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when phase started"
+        },
+        "completed_at": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when phase completed"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Free-form notes about phase progress and decisions"
+        }
+      }
+    },
+    "testingPhase": {
+      "allOf": [
+        { "$ref": "#/definitions/phase" },
+        {
+          "properties": {
+            "test_types": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["unit", "e2e-mock", "k8s-e2e-real"]
+              },
+              "description": "Types of tests applicable to this PRD"
+            }
+          }
+        }
+      ]
+    },
+    "buildingPhase": {
+      "allOf": [
+        { "$ref": "#/definitions/phase" },
+        {
+          "properties": {
+            "build_targets": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["gpuagent", "exporter", "docker"]
+              },
+              "description": "Build targets that were built"
+            }
+          }
+        }
+      ]
+    },
+    "verificationPhase": {
+      "allOf": [
+        { "$ref": "#/definitions/phase" },
+        {
+          "properties": {
+            "test_results": {
+              "type": "object",
+              "properties": {
+                "unit": {
+                  "type": "string",
+                  "enum": ["passed", "failed", "skipped"],
+                  "description": "Unit test results"
+                },
+                "e2e_mock": {
+                  "type": "string",
+                  "enum": ["passed", "failed", "skipped"],
+                  "description": "E2E mock test results"
+                },
+                "k8s_e2e": {
+                  "type": "string",
+                  "enum": ["passed", "failed", "skipped"],
+                  "description": "K8s E2E real hardware test results"
+                }
+              },
+              "description": "Results of verification tests"
+            }
+          }
+        }
+      ]
+    },
+    "documentationPhase": {
+      "allOf": [
+        { "$ref": "#/definitions/phase" },
+        {
+          "properties": {
+            "docs_updated": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "List of documentation files updated (paths relative to repo root)"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
