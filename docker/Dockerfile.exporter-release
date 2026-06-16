@@ -13,7 +13,7 @@ ARG AMDGPU_REPO_URL=https://repo.radeon.com
 RUN microdnf clean all && \
    echo "[amdgpu]" > /etc/yum.repos.d/amdgpu.repo && \
    echo "name=AMDGPU repository" >> /etc/yum.repos.d/amdgpu.repo && \
-      echo "baseurl=${AMDGPU_REPO_URL}/graphics/${AMDGPU_VERSION}/rhel/9.8/main/x86_64/" >> /etc/yum.repos.d/amdgpu.repo && \
+      echo "baseurl=${AMDGPU_REPO_URL}/graphics/${AMDGPU_VERSION}/rhel/9.6/main/x86_64/" >> /etc/yum.repos.d/amdgpu.repo && \
    echo "enabled=1" >> /etc/yum.repos.d/amdgpu.repo && \
    echo "priority=50" >> /etc/yum.repos.d/amdgpu.repo && \
    echo "gpgcheck=1" >> /etc/yum.repos.d/amdgpu.repo && \
