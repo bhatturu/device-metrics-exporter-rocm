@@ -90,9 +90,9 @@ builds:
                  mkdir -p build/charts && \
                  INTERNAL_TAG=${RELEASE:-v1.5.0} && INTERNAL_TAG=${INTERNAL_TAG%-*} && \
                  if [ \"$INTERNAL_TAG\" = 'exporter-0.0.1' ]; then INTERNAL_TAG=latest; fi && \
-                 PROJECT_VERSION=${RELEASE:-v1.5.0} DOCKER_REGISTRY=registry.test.pensando.io:5000 HELM_EXPORTER_IMAGE_TAG=$INTERNAL_TAG make helm && \
+                 HELM_CHARTS_VERSION=v0.0.1-${RELEASE:-dev} PROJECT_VERSION=${RELEASE:-v1.5.0} DOCKER_REGISTRY=registry.test.pensando.io:5000 HELM_EXPORTER_IMAGE_TAG=$INTERNAL_TAG make helm && \
                  cp helm-charts/device-metrics-exporter-charts.tgz build/charts/internal-device-metrics-exporter-charts.tgz && \
-                 PROJECT_VERSION=${RELEASE:-v1.5.0} DOCKER_REGISTRY=docker.io/amdpsdo HELM_EXPORTER_IMAGE_TAG=${RELEASE:-v1.5.0} make helm && \
+                 HELM_CHARTS_VERSION=v0.0.1-${RELEASE:-dev} PROJECT_VERSION=${RELEASE:-v1.5.0} DOCKER_REGISTRY=docker.io/amdpsdo HELM_EXPORTER_IMAGE_TAG=${RELEASE:-v1.5.0} make helm && \
                  cp helm-charts/device-metrics-exporter-charts.tgz build/charts/amdpsdo-device-metrics-exporter-charts.tgz"]
     owners: ["email:prshanmug@amd.com"]
     area:
@@ -107,9 +107,9 @@ builds:
                  mkdir -p build/charts && \
                  INTERNAL_TAG=${RELEASE:-v1.5.0} && INTERNAL_TAG=${INTERNAL_TAG%-*} && \
                  if [ \"$INTERNAL_TAG\" = 'exporter-0.0.1' ]; then INTERNAL_TAG=latest; fi && \
-                 PROJECT_VERSION=${RELEASE:-v1.5.0} DOCKER_REGISTRY=registry.test.pensando.io:5000 HELM_EXPORTER_IMAGE_TAG=$INTERNAL_TAG NIC_BUILD=1 make helm && \
+                 HELM_CHARTS_VERSION=v0.0.1-${RELEASE:-dev} PROJECT_VERSION=${RELEASE:-v1.5.0} DOCKER_REGISTRY=registry.test.pensando.io:5000 HELM_EXPORTER_IMAGE_TAG=$INTERNAL_TAG NIC_BUILD=1 make helm && \
                  cp helm-charts/nic-device-metrics-exporter-charts.tgz build/charts/internal-nic-device-metrics-exporter-charts.tgz && \
-                 PROJECT_VERSION=${RELEASE:-v1.5.0} DOCKER_REGISTRY=docker.io/amdpsdo HELM_EXPORTER_IMAGE_TAG=${RELEASE:-v1.5.0} NIC_BUILD=1 make helm && \
+                 HELM_CHARTS_VERSION=v0.0.1-${RELEASE:-dev} PROJECT_VERSION=${RELEASE:-v1.5.0} DOCKER_REGISTRY=docker.io/amdpsdo HELM_EXPORTER_IMAGE_TAG=${RELEASE:-v1.5.0} NIC_BUILD=1 make helm && \
                  cp helm-charts/nic-device-metrics-exporter-charts.tgz build/charts/amdpsdo-nic-device-metrics-exporter-charts.tgz"]
     owners: ["email:yshankar@amd.com"]
     area:
@@ -163,6 +163,31 @@ targets:
     #   build-dependencies:
     #       - build-test-runner-docker
     #       - build-test-runner-docker-agfhc
+
+  device-metrics-exporter-build-sanity:
+    commands: [ "/bin/sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter"]
+    owners: ["email:prshanmug@amd.com"]
+    area:
+    sub-area:
+    feature:
+    logfiles:
+        - /device-metrics-exporter/exporter-build.log
+    build-dependencies:
+        - build-device-metrics-exporter-docker-ubi9.6
+        - build-device-metrics-exporter-docker-ainic-ubi9.6
+        - build-device-metrics-exporter-docker-sriov-ubi9.6
+
+  test-runner-sanity:
+    commands: [ "/bin/sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter"]
+    owners: ["email:yan.sun3@amd.com"]
+    area:
+    sub-area:
+    feature:
+    logfiles:
+        - /device-metrics-exporter/test-runner.log
+    build-dependencies:
+        - build-test-runner-docker
+        - build-test-runner-docker-agfhc
 
   docs-sanity:
     commands: [ "/bin/sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter && make docs"]

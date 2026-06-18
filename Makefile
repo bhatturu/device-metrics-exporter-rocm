@@ -29,6 +29,7 @@ TESTRUNNER_RHEL_BASE_IMAGE ?= registry.access.redhat.com/ubi9/ubi-minimal:9.5
 
 # External repo builders
 GPUAGENT_BASE_IMAGE ?= ubuntu:22.04
+GPUAGENT_BUILDER_BASE_IMAGE ?= registry.access.redhat.com/ubi9/ubi:9.8
 GPUAGENT_BUILDER_IMAGE ?= gpuagent-builder:v1
 AMDSMI_BASE_IMAGE ?= registry.access.redhat.com/ubi9/ubi:9.6
 AMDSMI_BASE_UBUNTU22 ?= ubuntu:22.04
@@ -72,6 +73,7 @@ export AMDSMI_BASE_UBUNTU22
 export AMDSMI_BASE_UBUNTU24
 export AMDSMI_BASE_AZURE
 export GPUAGENT_BUILDER_IMAGE
+export GPUAGENT_BUILDER_BASE_IMAGE
 export ROCPROFILER_BASE_UBUNTU22
 
 export AMDSMI_BUILDER_IMAGE
@@ -122,12 +124,21 @@ AMDSMI_COMMIT ?= f09c4481e96cec4c5a8457e6c1864b4c0db0b8a1
 AMDSMI_SUBDIR ?= projects/amdsmi
 GIMSMI_BRANCH ?= release/8.7.0.K-rc
 GIMSMI_COMMIT ?= 8.7.0.K
+# gpuagent is cloned (not a submodule) and built inside the exporter docker build.
+# COMMIT must be the full 40-char SHA: the in-docker shallow `git fetch --depth 1 <sha>`
+# requires a full SHA (abbreviated SHAs are rejected by the remote).
+GPUAGENT_REPO ?= https://github.com/ROCm/gpu-agent.git
 GPUAGENT_BRANCH ?= main
-GPUAGENT_COMMIT ?= 534af3b
+GPUAGENT_COMMIT ?= 9645999
 
 ROCM_VERSION ?= .yum_7.2.1
 ROCM_APT_VERSION ?= .apt_7.2.1
 AINIC_VERSION ?= 1.117.5-a-56
+
+# staging dir for amdsmi (libamd_smi.so + amdsmi.h) selectively extracted from the
+# ROCm therock tarball by `make amdsmi-from-tarball`; `amdsmi-sync-assets` copies
+# it into assets/ (the committed amdsmi the docker build consumes by default)
+AMDSMI_TARBALL_STAGE := $(TOP_DIR)/build/amdsmi-from-tarball
 
 export ${GOROOT}
 export ${GOPATH}
@@ -144,11 +155,13 @@ export ${AMDSMI_COMMIT}
 export ${AMDSMI_SUBDIR}
 export ${GIMSMI_BRANCH}
 export ${GIMSMI_COMMIT}
+export GPUAGENT_REPO
 export ${GPUAGENT_BRANCH}
 export ${GPUAGENT_COMMIT}
 export AINIC_VERSION
 export ROCM_VERSION
 export ROCM_APT_VERSION
+export ROCM_TARBALL_URL
 
 ASSETS_PATH :=${TOP_DIR}/assets
 
@@ -402,13 +415,19 @@ amdgpuhealth:
 .PHONY: docker-cicd
 docker-cicd: gen amdexporter
 	echo "Building cicd docker for publish"
-	${MAKE} -C docker docker-cicd TOP_DIR=$(CURDIR)
+	${MAKE} -C docker docker-cicd TOP_DIR=$(CURDIR) AMDSMI_FROM_TARBALL=$(AMDSMI_FROM_TARBALL) ROCM_TARBALL_URL=$(ROCM_TARBALL_URL)
 	${MAKE} -C docker docker-save TOP_DIR=$(CURDIR)
 
 .PHONY: docker
 docker: gen amdexporter
-	${MAKE} -C docker TOP_DIR=$(CURDIR)
+	${MAKE} -C docker TOP_DIR=$(CURDIR) AMDSMI_FROM_TARBALL=$(AMDSMI_FROM_TARBALL) ROCM_TARBALL_URL=$(ROCM_TARBALL_URL)
 	${MAKE} -C docker docker-save TOP_DIR=$(CURDIR)
+
+# gpuagent is now cloned + built inside `make docker` (multi-stage Dockerfile),
+# so the standalone docker-tarball-amdsmi chain has been retired. To refresh
+# amdsmi from the tarball at image-build time: `make docker AMDSMI_FROM_TARBALL=1
+# ROCM_TARBALL_URL=<url>`. To refresh the committed assets/ copy: run
+# `make amdsmi-from-tarball amdsmi-sync-assets`.
 
 .PHONY: docker-sriov
 docker-sriov: gen amdexporter

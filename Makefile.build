@@ -6,10 +6,6 @@ AMDMSMI_SRC_DIR := $(TOP_DIR)/
 AMDSMI_PATCH_DIR := $(TOP_DIR)/patch/amdsmi/
 AMDSMI_BUILD_DIR := $(TOP_DIR)/tools/smilib-builderimage/
 GIMSMI_BUILD_DIR := $(TOP_DIR)/tools/gimlib-builderimage/
-GPUAGENT_SRC_DIR := $(TOP_DIR)/gpuagent/
-GPUAGENT_OUT_DIR := $(TOP_DIR)/gpuagent/sw/nic/build/x86_64/sim/bin/
-GPUAGENT_CONTAINER_WORKDIR := /usr/src/github.com/ROCm/gpu-agent/
-ASSET_COPY_SCRIPT := $(TOP_DIR)/tools/scripts/copy_buildasset_gpuagent.sh
 ROCPROFILER_CONTAINER_WORKDIR := ${WORK_DIR}/rocprofilerclient
 ROCPROFILER_BUILD_DIR := $(TOP_DIR)/tools/rocprofiler-builderimage/
 ROCPROFILER_SRC_DIR := $(TOP_DIR)/rocprofilerclient/
@@ -61,16 +57,10 @@ amdsmi-build-ub24:
 amdsmi-build-azure:
 	OS=AZURE3 ${MAKE} amdsmi-build
 
-# creates a container image required for gpuagent build tools necessary for
-# compilation
-.PHONY: gpuagent-build
-gpuagent-build:
-	BUILD_BASE_IMAGE=${AMDSMI_BASE_IMAGE} GPUAGENT_BLD_CONTAINER_IMAGE=${GPUAGENT_BUILDER_IMAGE} ${MAKE} -C gpuagent/tools/build-container rhel-builder
-
-# for debugging or developing with shell for gpuagent codebase
-.PHONY: gpuagent-shell
-gpuagent-shell:
-	${MAKE} -C gpuagent docker-shell
+# NOTE: gpuagent is cloned + built inside the exporter docker build (multi-stage
+# docker/Dockerfile.exporter-release, stage `gpuagent-build`). The former
+# host-side gpuagent-build (builder image) and gpuagent-shell targets, which
+# depended on the now-removed gpuagent submodule, have been retired.
 
 .PHONY: rocprofiler-build
 rocprofiler-build:

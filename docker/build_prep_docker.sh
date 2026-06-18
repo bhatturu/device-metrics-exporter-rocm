@@ -31,18 +31,15 @@ fi
 if [ "$MOCK" == "1" ]; then
     tar -xf $TOP_DIR/assets/gpuagent_mock.bin.gz -C $TOP_DIR/docker/
     ln -f $TOP_DIR/bin/rocpctl-mock $TOP_DIR/docker/rocpctl-mock
+    chmod +x $TOP_DIR/docker/gpuagent
 elif [ "$SRIOV" == "1" ]; then
     echo "Copying sriov gim driver gpuagent to docker"
     tar -xf $TOP_DIR/assets/gpuagent_sriov_static.bin.gz -C $TOP_DIR/docker/
+    chmod +x $TOP_DIR/docker/gpuagent
 else
-    # GPUOP-723: container ships the UAL/IFOE-aware gpuagent by default
-    # (UAL defaults to 1 if unset). The Go capability gate in
-    # pkg/amdgpu/gpuagent/gpuagent_ifoe.go gracefully no-ops on hosts
-    # without IFOE-capable hardware so existing GPU-only customers see
-    # no regression. Override with `UAL=0 make ...` to fall back to the
-    # non-IFOE prebuilt (gpuagent_static.bin.gz) — useful for debugging
-    # libamd_smi ABI compat against the older prebuilt or SKUs that
-    # explicitly should not ship UAL.
+    # collab-2.0.0: UAL prebuilt is the default release path (GPUOP-723).
+    # BuildKit prunes the gpuagent-build Dockerfile stage since the runtime
+    # stage ADD's prebuilts, not COPY --from=gpuagent-build.
     UAL="${UAL:-1}"
     if [ -f $TOP_DIR/build/assets/gpuagent ]; then
         echo "Copying newly built gpuagent to docker"
@@ -50,12 +47,23 @@ else
     elif [ "$UAL" == "1" ] && [ -f $TOP_DIR/assets/gpuagent_ual.bin.gz ]; then
         echo "Copying UAL/IFOE prebuilt gpuagent to docker (GPUOP-723 default; UAL=1)"
         tar -xf $TOP_DIR/assets/gpuagent_ual.bin.gz -C $TOP_DIR/docker/
+        cp -vf $TOP_DIR/assets/gpuctl_ual $TOP_DIR/docker/gpuctl
     else
         echo "Copying non-IFOE prebuilt gpuagent to docker (UAL=$UAL)"
         tar -xf $TOP_DIR/assets/gpuagent_static.bin.gz -C $TOP_DIR/docker/
+        ln -f $TOP_DIR/assets/gpuctl.gobin $TOP_DIR/docker/gpuctl
+    fi
+    chmod +x $TOP_DIR/docker/gpuagent
+
+    # Stage amdsmi header + patches for the gpuagent-build stage.
+    # Pruned by BuildKit in the normal UAL prebuilt path; present for
+    # future source-build runs (AMDSMI_FROM_TARBALL=1).
+    cp -vf $TOP_DIR/assets/amd_smi_lib/x86_64/$OS/lib/amdsmi.h $TOP_DIR/docker/amdsmi.h
+    rm -rf $TOP_DIR/docker/patch-gpuagent && mkdir -p $TOP_DIR/docker/patch-gpuagent
+    if [ -d $TOP_DIR/patch/gpuagent ]; then
+        cp -vf $TOP_DIR/patch/gpuagent/*.patch $TOP_DIR/docker/patch-gpuagent/ 2>/dev/null || true
     fi
 fi
-chmod +x $TOP_DIR/docker/gpuagent
 if [ "$SRIOV" == "1" ]; then
     echo "Copying sriov gim libs to docker"
     cp -vf $TOP_DIR/assets/gim_smi_lib/x86_64/$OS/lib/libgim_amd_smi.so $TOP_DIR/docker/
@@ -65,12 +73,18 @@ elif [ -d $TOP_DIR/build/assets/$OS/lib ]; then
     # copy built artifacts for the OS else revert to prebuilt files
     echo "Copying newly built amdsmi to docker"
     echo "Note : user to include the built libs on to the container"
-    cp -vf $TOP_DIR/build/assets/$OS/lib/libamd_smi.so.* $TOP_DIR/docker/
+    SMI_LIB_DIR=$TOP_DIR/build/assets/$OS/lib
 else
     # copy built artifacts for the OS else revert to prebuilt files
     echo "Copying pre built amdsmi to docker"
     echo "Note : user to include the built libs on to the container"
-    cp -vf $TOP_DIR/assets/amd_smi_lib/x86_64/$OS/lib/libamd_smi.so.* $TOP_DIR/docker/	
+    SMI_LIB_DIR=$TOP_DIR/assets/amd_smi_lib/x86_64/$OS/lib
+fi
+# stage ONLY the real versioned .so (libamd_smi.so.X.Y.Z); the Dockerfile derives
+# the SONAME-major and unversioned symlinks from it. Avoids ADDing a deref'd
+# duplicate of the .so.<maj> symlink into an image layer.
+if [ -n "$SMI_LIB_DIR" ]; then
+    cp -vfL $SMI_LIB_DIR/libamd_smi.so.*.*.* $TOP_DIR/docker/
 fi
 
 if [ "$SRIOV" != "1" ]; then
@@ -87,7 +101,9 @@ if [ "$SRIOV" != "1" ]; then
 
     chmod +x $TOP_DIR/docker/rocpctl
 fi
-ln -f $TOP_DIR/assets/gpuctl.gobin $TOP_DIR/docker/gpuctl
+if [ "$MOCK" == "1" ] || [ "$SRIOV" == "1" ]; then
+    ln -f $TOP_DIR/assets/gpuctl.gobin $TOP_DIR/docker/gpuctl
+fi
 ln -f $TOP_DIR/bin/amd-metrics-exporter $TOP_DIR/docker/amd-metrics-exporter
 ln -f $TOP_DIR/bin/metricsclient $TOP_DIR/docker/metricsclient
 ln -f $TOP_DIR/bin/amdgpuhealth $TOP_DIR/docker/amdgpuhealth
