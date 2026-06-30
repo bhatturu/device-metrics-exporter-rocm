@@ -35,3 +35,4 @@ codie-config.yaml
 PROGRESS-*.md
 # gpuagent patch staging dir — generated at build time by docker/build_prep_docker.sh from patch/gpuagent/
 docker/patch-gpuagent/
+docs/superpowers/

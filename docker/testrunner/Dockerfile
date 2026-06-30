@@ -1,51 +1,71 @@
-ARG BASE_IMAGE=registry.access.redhat.com/ubi9/ubi:9.6
+ARG BASE_IMAGE=registry.access.redhat.com/ubi9/ubi:9.8
 FROM ${BASE_IMAGE}
 
 LABEL maintainer="AMD Inc"
-LABEL OS="registry.access.redhat.com/ubi9/ubi:9.6"
+LABEL OS="registry.access.redhat.com/ubi9/ubi:9.8"
 
 ARG ROCM_VERSION=7.2.3
 ARG RADEON_REPO_URL=https://repo.radeon.com
+# Set to full TheRock tarball URL to skip repo.radeon.com and install from tarball.
+# Leave empty to use the old dnf-based install path.
+ARG ROCM_TARBALL_URL=""
+# Full URL to the RVS pre-built tarball.
+# Leave empty to install rocm-validation-suite via dnf (old path).
+ARG RVS_TARBALL_URL=""
 
-# EPEL repo is required to install yaml-cpp, a dependency of rocm-validation-suite package
+ADD install-rocm-tarball.sh /usr/local/bin/install-rocm-tarball.sh
+ADD install-rvs-tarball.sh /usr/local/bin/install-rvs-tarball.sh
+RUN chmod +x /usr/local/bin/install-rocm-tarball.sh /usr/local/bin/install-rvs-tarball.sh
+
+
+# Install ROCm libs and RVS.
+# Path A (TheRock tarball): ROCM_TARBALL_URL + RVS_TARBALL_URL both set.
+#   - Downloads pruned TheRock libs (amdhip64, rocblas, hsa-runtime64, rocm-core,
+#     hipblaslt, hiprand, rocrand, omp, rocm_sysdeps, amd-smi) via install-rocm-tarball.sh.
+#   - Downloads and extracts RVS tarball into /opt/rocm via install-rvs-tarball.sh.
+#   - Patches level_1 conf files (done inside install-rvs-tarball.sh).
+# Path B (legacy dnf): uses repo.radeon.com to install rocrand + rocm-validation-suite.
+#   - Also installs dkms (required by the rcqt module's level test runner).
+#   - Patches level_1 conf files inline.
 RUN dnf clean all && \
-    rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && \
-    echo "[ROCm-${ROCM_VERSION}]" > /etc/yum.repos.d/rocm.repo && \
-    echo "name=ROCm${ROCM_VERSION}" >> /etc/yum.repos.d/rocm.repo && \
-    echo "baseurl=${RADEON_REPO_URL}/rocm/rhel9/${ROCM_VERSION}/main" >> /etc/yum.repos.d/rocm.repo && \
-    echo "enabled=1" >> /etc/yum.repos.d/rocm.repo && \
-    echo "priority=50" >> /etc/yum.repos.d/rocm.repo && \
-    echo "gpgcheck=1" >> /etc/yum.repos.d/rocm.repo && \
-    echo "gpgkey=${RADEON_REPO_URL}/rocm/rocm.gpg.key" >> /etc/yum.repos.d/rocm.repo && \
-    dnf update -y && \
-    dnf install rocrand rocm-validation-suite -y && \
-    ln /usr/lib64/libdrm_amdgpu.so.1 /usr/lib64/libdrm_amdgpu.so && \
+    if [ -n "${ROCM_TARBALL_URL}" ] && [ -n "${RVS_TARBALL_URL}" ]; then \
+        dnf install -y wget tar gzip pciutils && \
+        /usr/local/bin/install-rocm-tarball.sh "${ROCM_VERSION}" "${ROCM_TARBALL_URL}" --profile testrunner && \
+        /usr/local/bin/install-rvs-tarball.sh "${RVS_TARBALL_URL}"; \
+    else \
+        dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && \
+        echo "[ROCm-${ROCM_VERSION}]" > /etc/yum.repos.d/rocm.repo && \
+        echo "name=ROCm${ROCM_VERSION}" >> /etc/yum.repos.d/rocm.repo && \
+        echo "baseurl=${RADEON_REPO_URL}/rocm/rhel9/${ROCM_VERSION}/main" >> /etc/yum.repos.d/rocm.repo && \
+        echo "enabled=1" >> /etc/yum.repos.d/rocm.repo && \
+        echo "priority=50" >> /etc/yum.repos.d/rocm.repo && \
+        echo "gpgcheck=1" >> /etc/yum.repos.d/rocm.repo && \
+        echo "gpgkey=${RADEON_REPO_URL}/rocm/rocm.gpg.key" >> /etc/yum.repos.d/rocm.repo && \
+        dnf update -y && \
+        dnf install -y rocrand rocm-validation-suite && \
+        ln /usr/lib64/libdrm_amdgpu.so.1 /usr/lib64/libdrm_amdgpu.so && \
+        dnf config-manager --add-repo=https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/ && \
+        dnf config-manager --add-repo=https://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/ && \
+        rpm --import https://www.centos.org/keys/RPM-GPG-KEY-CentOS-Official && \
+        dnf install -y dkms && \
+        find /opt/rocm/share/rocm-validation-suite/conf -name '*level_1*' -type f \
+            -exec sed -i '/^[[:space:]]*package:/d; /^[[:space:]]*debpackagelist:/d; s/^[[:space:]]*rpmpackagelist:.*/  rpmpackagelist: rocm-core rocminfo comgr rocblas rocrand hsa-rocr hip-runtime-amd/' {} \; ; \
+    fi && \
     rm -rf /var/cache/yum /var/cache/dnf && \
     dnf clean all
 
-# Security patch for multiple CVEs
+# Security patch for multiple CVEs (both paths)
 RUN dnf update -y libarchive libxml2 pam python3-requests glibc && \
     rm -rf /var/cache/yum /var/cache/dnf && \
     dnf clean all
-
-# Required by RVS level based test recipes
-# 1. Install dkms package
-# 2. Modify the level 1 test recipes since not all packages are required in the container environment
-RUN dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm -y && \
-    dnf config-manager --add-repo=https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/ && \
-    dnf config-manager --add-repo=https://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/ && \
-    rpm --import https://www.centos.org/keys/RPM-GPG-KEY-CentOS-Official && \
-    dnf install dkms -y && \
-    rm -rf /var/cache/yum /var/cache/dnf && \
-    dnf clean all && \
-    find /opt/rocm/share/rocm-validation-suite/conf -name '*level_1*' -type f -exec sed -i '/^[[:space:]]*package:/d; /^[[:space:]]*debpackagelist:/d; s/^[[:space:]]*rpmpackagelist:.*/  rpmpackagelist: rocm-core rocminfo comgr rocblas rocrand hsa-rocr hip-runtime-amd/' {} \;
 
 ADD amd-test-runner /amd-test-runner
 ADD LICENSE /licenses/LICENSE
 RUN chmod +x /amd-test-runner
 
-# Set LD_LIBRARY_PATH for ROCm
-ENV LD_LIBRARY_PATH=/opt/rocm/lib:$LD_LIBRARY_PATH
+# /opt/rocm/lib/rocm_sysdeps/lib needed for TheRock tarball builds (libdrm_amdgpu etc.)
+# /opt/rocm/lib/llvm/lib needed for libomp.so (TheRock path)
+ENV LD_LIBRARY_PATH=/opt/rocm/lib:/opt/rocm/lib/rvs:/opt/rocm/lib/rocm_sysdeps/lib:/opt/rocm/lib/llvm/lib:$LD_LIBRARY_PATH
 
 LABEL name="amd-device-test-runner" \
     maintainer="yan.sun3@amd.com,udaybhaskar.biluri@amd.com,shrey.ajmera@amd.com" \
