@@ -1,226 +1,177 @@
 ---
 name: rocm-update
-description: This skill should be used when updating the Device Metrics Exporter to a new ROCm/therock version. Orchestrates the full update workflow: create branches, update amdsmi libraries, rebuild gpuagent, update DME assets, build docker image.
-version: 1.0.0
+description: This skill should be used when updating the Device Metrics Exporter to a new ROCm/therock version (e.g. RC1 → RC2, nightly bump). Orchestrates the tarball-driven update: bump version references, sync amdsmi assets from the therock tarball, rebuild the docker image (gpuagent builds in-image), and smoke-test.
+version: 2.0.0
 ---
 
 # ROCm Version Update Workflow
 
-Updates the Device Metrics Exporter stack to a new ROCm/therock release. Coordinates changes across gpu-agent and DME repositories.
+Updates the Device Metrics Exporter to a new ROCm/therock release.
 
-## Overview
+**All work happens in the DME repo only.** As of the 2026-06-16 pivot
+(`docs-internal/knowledge/plans/2026-06-16-gpuagent-source-build-in-docker.md`),
+gpuagent is **no longer a git submodule** — it is cloned and compiled inside
+the exporter docker build at `GPUAGENT_COMMIT`, linking against the same amdsmi
+that ships at runtime. There is no separate gpu-agent repo edit, no host-side
+gpuagent build, and no manual amdsmi injection into a vendor tree.
 
-A ROCm version update requires changes in two repos in this order:
+## What actually changes
 
-1. **gpu-agent** (`~/src/gpu-agent`) — update amdsmi library + header, rebuild binaries
-2. **DME** (`~/src/device-metrics-exporter`) — update tarball URL, asset copy, rebuild docker image
+The update reduces to three artifacts:
+
+1. **Version references** — `Makefile` + `dev.env` (`ROCM_VERSION`, `ROCM_TARBALL_URL`).
+2. **amdsmi assets** — `assets/amd_smi_lib/x86_64/RHEL9/lib/{libamd_smi.so*, amdsmi.h, librocm_sysdeps_*.so*}` + `assets/amd_smi_lib/version.txt`, refreshed from the tarball by `make amdsmi-sync-assets`. UBUNTU22/24 are symlinks to RHEL9 — they update automatically.
+3. **docker image** — rebuilt by `make docker`; `build_prep_docker.sh` stages the synced `.so` into `docker/` automatically (no manual `cp`).
+
+Optionally bump `GPUAGENT_COMMIT` if the update should also advance gpuagent.
 
 ## Inputs Required
 
-Before starting, gather:
-- **New ROCm version** (e.g. `7.13`)
-- **Therock tarball URL** — found in the BKC PDF in `docs/` or from `https://therock-nightly-tarball.s3.amazonaws.com/`
-  - Format: `https://therock-nightly-tarball.s3.amazonaws.com/therock-dist-linux-gfx950-dcgpu-<VERSION>a<DATE>.tar.gz`
-- **Base DME branch** — typically `collab-<prev_version>` (e.g. `collab-7.12`)
-- **Base gpu-agent commit** — latest main excluding any unwanted commits (check with user)
-- **Source branch for amdsmi** — check `https://github.com/ROCm/rocm-systems/branches` for `release/therock-<version>`; if not available, extract from tarball
+- **New ROCm version string** — must match the tarball's embedded version so it
+  extracts to `/opt/rocm-<VERSION>/` (e.g. `7.14.0rc2`).
+- **Therock tarball URL** — from the JIRA/BKC. Format:
+  `https://rocm.prereleases.amd.com/tarball-multi-arch/therock-dist-linux-multiarch-<VERSION>.tar.gz`
+- **Old version string** — for grepping stray references (e.g. `7.14.0rc1`).
 
-## Step 1: Verify Tarball
+## Step 1: Verify the tarball
 
 ```bash
-# Confirm tarball exists and find libamd_smi.so version
-curl -s --head <TARBALL_URL> | grep -i "200\|content-length"
-
-# Find .so version and amdsmi.h path
-curl -s <TARBALL_URL> | tar -tz 2>/dev/null | grep -E "libamd_smi\.so\.|amdsmi\.h"
+# Confirm it exists (HTTP 200) and note the libamd_smi.so version
+curl -sI "<TARBALL_URL>" | head -1
+curl -s "<TARBALL_URL>" | tar -tz 2>/dev/null | grep -E "libamd_smi\.so\.[0-9]|amd_smi/amdsmi\.h" | head
 ```
 
-## Step 2: Update gpu-agent
+Note the `libamd_smi.so.<X.Y.Z>` version. If it differs from the current one
+(check `ls assets/amd_smi_lib/x86_64/RHEL9/lib/libamd_smi.so.*.*.*`), the docker
+symlink logic still handles it dynamically — no Dockerfile edit needed — but call
+it out in the plan file.
 
-### 2a. Pull latest and create branch
+## Step 2: Bump version references
+
+Create the branch off `main`:
 
 ```bash
-cd ~/src/gpu-agent
-git fetch origin
-git checkout <BASE_COMMIT>
-git checkout -b feature/update-amdsmi-therock-<VERSION>
+cd ~/go/src/github.com/pensando/device-metrics-exporter
+git fetch origin main
+git checkout -b feature/rocm-<VERSION>-support origin/main
 ```
 
-### 2b. Check if amdsmi source branch exists in rocm-systems
-
-The gpu-agent tree contains a sparse partial clone of `ROCm/rocm-systems` at
-`sw/nic/third-party/amdsmi-src/rocm-systems/`, currently tracking `release/therock-<PREV_VERSION>`.
+Edit **`Makefile`** and **`dev.env`** — set `ROCM_VERSION` and `ROCM_TARBALL_URL`
+to the new values in both. In `dev.env`, also update the provenance comment above
+`ROCM_VERSION` (build #, rockrel run, date).
 
 ```bash
-# Check if release/therock-<VERSION> exists (no auth token needed for public repo)
-curl -s "https://api.github.com/repos/ROCm/rocm-systems/branches?per_page=100" | \
-  python3 -c "import json,sys; [print(b['name']) for b in json.load(sys.stdin) if '<VERSION>' in b['name']]"
-# Also check page 2 if nothing found:
-curl -s "https://api.github.com/repos/ROCm/rocm-systems/branches?per_page=100&page=2" | \
-  python3 -c "import json,sys; [print(b['name']) for b in json.load(sys.stdin) if '<VERSION>' in b['name']]"
+# Verify no stray old-version references remain in the version-bearing files
+grep -rn "<OLD_VERSION>" Makefile dev.env
 ```
 
-**If branch exists** — update the in-tree sparse clone:
+> `Makefile` line ~117 has `AMDSMI_BRANCH ?= therock-7.13` and
+> `assets/version.yaml` still references `7.13` — these are **stale metadata**,
+> not part of the tarball-driven build path, and are not required for the update.
+> Leave them unless the JIRA explicitly asks to reconcile them.
+
+## Step 3: Sync amdsmi assets from the tarball
+
+This is the core step. `amdsmi-sync-assets` extracts `amdsmi.h`,
+`libamd_smi.so*`, and the tracked `librocm_sysdeps_*.so*` from the tarball into
+`assets/amd_smi_lib/x86_64/RHEL9/lib/` and rewrites `version.txt`. Use
+`AMDSMI_TARBALL_FORCE=1` to bypass the staging cache and re-extract.
 
 ```bash
-cd sw/nic/third-party/amdsmi-src/rocm-systems
-git remote set-branches origin release/therock-<VERSION>
-git fetch origin release/therock-<VERSION>
-git checkout -b release/therock-<VERSION> origin/release/therock-<VERSION>
-# Then copy amdsmi.h from projects/amdsmi/include/ into the vendor tree
+make amdsmi-sync-assets AMDSMI_TARBALL_FORCE=1
 ```
 
-**If branch does not exist** (common for new versions) — extract from tarball (see 2c).
-
-### 2c. Extract amdsmi from tarball
+Verify the assets updated:
 
 ```bash
-mkdir -p /tmp/therock-<VERSION>
-curl -s <TARBALL_URL> | tar -xz -C /tmp/therock-<VERSION> \
-  "./include/amd_smi/amdsmi.h" \
-  "./lib/libamd_smi.so.<SO_VERSION>"
-
-# Copy into gpu-agent vendor tree
-cp /tmp/therock-<VERSION>/include/amd_smi/amdsmi.h \
-   sw/nic/third-party/rocm/amd_smi_lib/include/amd_smi/amdsmi.h
-
-cp /tmp/therock-<VERSION>/lib/libamd_smi.so.<SO_VERSION> \
-   sw/nic/third-party/rocm/amd_smi_lib/x86_64/lib/libamd_smi.so.<SO_VERSION>
-
-ln -sf libamd_smi.so.<SO_VERSION> \
-   sw/nic/third-party/rocm/amd_smi_lib/x86_64/lib/libamd_smi.so.26
-
-# Update version.txt
-echo "therock-<VERSION>/rocm-systems/amdsmi-<SO_VERSION>" > \
-  sw/nic/third-party/rocm/amd_smi_lib/version.txt
+git status assets/amd_smi_lib/
+cat assets/amd_smi_lib/version.txt          # → therock-<VERSION>
+ls -l assets/amd_smi_lib/x86_64/RHEL9/lib/libamd_smi.so.*.*.*
 ```
 
-### 2d. Commit and push
+Only the 5 already-tracked sysdeps are copied — the sync will **not** introduce
+new sysdeps files. If a new runtime sysdep is genuinely needed, add it
+explicitly (`git add`) and note it in the plan file.
+
+## Step 4: Rebuild the docker image
+
+Prefer the builder skill: `/builder exporter docker`. It runs the containerized
+build with the correct args. Under the hood:
 
 ```bash
-git add sw/nic/third-party/rocm/amd_smi_lib/
-git commit -m "feat: update amdsmi to therock-<VERSION>"
-git push origin feature/update-amdsmi-therock-<VERSION>
+make docker          # AMDSMI_FROM_TARBALL=0 (default): uses the synced assets/
 ```
 
-## Step 3: Rebuild gpuagent binaries
+**Default path (`AMDSMI_FROM_TARBALL=0`)** consumes the committed
+`assets/amd_smi_lib/` you just synced — no 10 GB re-download. gpuagent is cloned
+at `GPUAGENT_COMMIT` and compiled in-image against that same amdsmi. This is the
+correct path for a version update whose assets are already synced in Step 3.
 
-Use the **builder skill** (`/builder gpuagent`) — this is the recommended approach. The builder skill handles the correct Docker container invocation and build ordering automatically.
+Only pass `AMDSMI_FROM_TARBALL=1 ROCM_TARBALL_URL=<URL>` if you want the docker
+build itself to re-extract amdsmi from the tarball (redundant right after Step 3).
 
-Verify outputs:
-```bash
-ls -lh ~/src/gpu-agent/sw/nic/build/x86_64/sim/bin/gpuagent{,_gim,_mock}
-~/src/gpu-agent/sw/nic/build/x86_64/sim/bin/gpuctl version
-```
+## Step 5: Smoke test
 
-## Step 4: Update DME
-
-### 4a. Pull latest base branch and create branch
+### Mock (no hardware)
 
 ```bash
-cd ~/src/device-metrics-exporter
-git fetch pensando <BASE_BRANCH>
-git checkout <BASE_BRANCH>
-git reset --hard pensando/<BASE_BRANCH>
-git checkout -b feature/rocm-<VERSION>-support
+make -C docker docker-mock TOP_DIR=$(pwd)    # build the mock image (or /builder docker mock)
+curl -s localhost:<PORT>/metrics | grep -E "^(amd|gpu)_" | head
+# gpu_* prefix for bare docker run; amd_* only with MetricsFieldPrefix in config.json
 ```
 
-### 4b. Update version references
+### Real hardware (dev GPU host)
 
-| File | Change |
-|---|---|
-| `docker/Dockerfile.exporter-release` | `ARG ROCM_VERSION` and `ARG AMDGPU_VERSION` default values |
-| `docker/Dockerfile.exporter-release` | `ADD ./libamd_smi.so.<SO_VERSION>` line and `ln -sf` symlink line (if .so version changed) |
-| `dev.env` | `ROCM_TARBALL_URL` value (and the comment line above it with the date) |
-| `Makefile` | `AMDSMI_BRANCH` (e.g. `release/therock-<VERSION>`) and `ROCM_VERSION` (format: `.yum_<X.Y.Z>`) |
-| `assets/version.yaml` | `amd_smi_lib`, `rocprofiler`, `profiler_lib` branch/version fields |
+Deploy the image and confirm live metrics:
 
 ```bash
-# Verify no stray old version references remain
-grep -rn "<OLD_VERSION>" docker/Dockerfile.exporter-release Makefile assets/version.yaml dev.env
+docker exec <container> curl -s localhost:<PORT>/metrics | grep gpu_average_package_power
+# Expect non-zero power/clock/VRAM values, and no ErrZeroGPUs / undefined-symbol in logs
 ```
 
-### 4c. Copy assets and libamd_smi to DME
+Acceptance (from GPUOP-970): `assets/` reflects the new amdsmi (no old artifacts),
+`make docker` succeeds, and basic `amd_gpu_*` / `gpu_*` metrics emit correctly.
+
+## Step 6: Commit + plan file
 
 ```bash
-make gpuagent-asset-copy GPUAGENT_SRC_DIR=~/src/gpu-agent
-
-# Copy new .so to docker/ for image build
-cp ~/src/gpu-agent/sw/nic/third-party/rocm/amd_smi_lib/x86_64/lib/libamd_smi.so.<SO_VERSION> \
-   docker/libamd_smi.so.<SO_VERSION>
+git add Makefile dev.env assets/amd_smi_lib/
+git commit -m "<JIRA-ID>: sync amdsmi assets for ROCm <VERSION>"
 ```
 
-### 4d. Update gpuagent submodule pointer
-
-```bash
-git -C gpuagent checkout <GPU_AGENT_COMMIT>
-
-# If .so version bumped, remove the old .so file from docker/
-# git rm docker/libamd_smi.so.<OLD_SO_VERSION>
-
-git add gpuagent assets/ docker/libamd_smi.so.<SO_VERSION> \
-  docker/Dockerfile.exporter-release Makefile assets/version.yaml dev.env
-git commit -m "feat(docker): update ROCm version references to <VERSION>"
-git push origin feature/rocm-<VERSION>-support
-```
-
-## Step 5: Build and validate
-
-Use the **builder skill** (`/builder exporter docker`) — this is the recommended approach. The builder skill handles containerized builds and docker image creation automatically.
-
-For the docker image, the Makefile target is:
-```bash
-make -C docker docker \
-  TOP_DIR=$(pwd) \
-  ROCM_VERSION=<VERSION> \
-  AMDGPU_VERSION=<VERSION> \
-  ROCM_TARBALL_URL=<TARBALL_URL> \
-  EXPORTER_IMAGE=<REGISTRY>/device-metrics-exporter:collab-<VERSION>-1
-```
-
-### Quick smoke test (mock — no hardware needed)
-
-Use `/builder mock` to build the mock docker image, then curl the endpoint:
-```bash
-curl -s localhost:5001/metrics | grep vram_max_bandwidth
-# Expected: gpu_vram_max_bandwidth 3.2768e+06  PASS
-```
-
-### K8s e2e (real hardware — manual)
-
-Run the DME standalone e2e suite:
-```bash
-docker run --rm \
-  -v /tmp/kubeconfig.yaml:/kubeconfig:ro \
-  -v /tmp/helm-charts:/helm-charts:ro \
-  dme-k8s-e2e:latest \
-  -kubeconfig /kubeconfig \
-  -helmchart /helm-charts \
-  -registry <REGISTRY>/device-metrics-exporter \
-  -imagetag collab-<VERSION>-1 \
-  -namespace dme-standalone-test \
-  -platform k8s -test.timeout 60m -v
-```
+Every PR to `main` requires a plan file in
+`docs-internal/knowledge/plans/YYYY-MM-DD-*.md` (see
+`2026-07-07-rocm-7.14rc1-amdsmi-sync.md` for the template). Then open the PR with
+`/pr-create`.
 
 ## Key Rules
 
-- **Rebuild gpuagent** whenever amdsmi.h or libamd_smi.so content changes (even if .so version number is the same)
-- **DCM changes are separate** — do not update DCM as part of this workflow
-- **Check if .so version bumped** — if it does, update the `ADD ./libamd_smi.so.<X>` line in Dockerfile and the symlink
-- **Sequential builds** — gpuagent → gim → mock → asset-copy → DME binary → Docker
+- **No submodule, no host-side gpuagent build.** gpuagent compiles inside the
+  docker build. Do not look for a `gpuagent/` submodule or run
+  `gpuagent-asset-copy` / `amdsmi-inject-gpuagent` — those targets were retired.
+- **`make amdsmi-sync-assets` is the single amdsmi update mechanism.** Do not
+  hand-copy `.so`/header files into `assets/` or `docker/`.
+- **Runtime `.so` staging into `docker/` is automatic** via
+  `build_prep_docker.sh` — no manual `cp` step.
+- **RHEL9 is the source of truth**; UBUNTU22/24 lib dirs are symlinks to it.
+- **A `.so` version bump needs no Dockerfile edit** — both the builder and
+  runtime stages derive the major/symlink names dynamically from the staged file.
+- **DCM changes are separate** — not part of this workflow.
 
 ## Reused Skills
 
-- `/builder gpuagent` — builds gpuagent/gim/mock binaries
-- `/builder exporter` — builds DME binary
-- `/builder docker` — builds docker image
+- `/builder exporter` — build the DME binary
+- `/builder docker` — build the release docker image
+- `/builder docker mock` — build the mock image for smoke testing
+- `/pr-create` — open/update the PR with the required format
 
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `libamdsmi: undefined symbol` | Header/binary mismatch | Rebuild gpuagent against new amdsmi.h |
-| `libamd_smi.so.26: not found` | Wrong .so name in Dockerfile | Check `ADD` line matches actual .so filename |
-| Tarball URL 404 | Wrong date or version | Re-check BKC PDF for correct URL |
-| `release/therock-<X>` branch missing | Branch not cut yet | Extract from tarball (Step 2c) |
-| `GLIBC_2.38` symbols in .so | Ubuntu-built .so | Use RHEL9-built .so (build from source) |
+| Tarball URL 404 | Wrong version/URL | Re-check the JIRA/BKC for the exact tarball path |
+| `amdsmi.h / libamd_smi.so not found in tarball` | Wrong URL or version | Verify with the Step 1 `tar -tz` listing |
+| `assets/` unchanged after sync | Staging cache hit | Re-run with `AMDSMI_TARBALL_FORCE=1` |
+| `undefined symbol` from libamdsmi at runtime | Header/binary skew | Ensure Step 3 synced both `.so` and `amdsmi.h`; rebuild docker (gpuagent relinks in-image) |
+| `librocm_sysdeps_*.so: not found` | Sysdeps missing from assets | Confirm the tarball carries them; re-run sync with `AMDSMI_TARBALL_FORCE=1` |
+| `GLIBC_2.38` symbols in `.so` | Ubuntu-built `.so` in tarball | Use the multiarch/RHEL9-compatible tarball |

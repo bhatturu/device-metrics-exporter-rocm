@@ -119,11 +119,9 @@ BUILD_DIR := $(DOCS_DIR)/_build
 HTML_DIR := $(BUILD_DIR)/html
 
 # library branch to build amdsmi libraries for gpuagent
-# NOTE: AMDSMI_REPO defaults to an AMD-internal repository that requires AMD network access.
-# External builds should override with: make amdsmi-compile AMDSMI_REPO=https://github.com/ROCm/rocm-systems.git AMDSMI_BRANCH=release/therock-7.12
-AMDSMI_REPO   ?= https://github.com/AMD-ROCm-Internal/rocm-systems.git
-AMDSMI_BRANCH ?= amd-npi
-AMDSMI_COMMIT ?= f09c4481e96cec4c5a8457e6c1864b4c0db0b8a1
+AMDSMI_REPO   ?= https://github.com/ROCm/rocm-systems.git
+AMDSMI_BRANCH ?= release/therock-7.14
+AMDSMI_COMMIT ?= 53a7a4f3fe6019a551506285f9f2bb86dfddf9b4
 AMDSMI_SUBDIR ?= projects/amdsmi
 GIMSMI_BRANCH ?= release/8.7.0.K-rc
 GIMSMI_COMMIT ?= 8.7.0.K
@@ -134,8 +132,8 @@ GPUAGENT_REPO ?= https://github.com/ROCm/gpu-agent.git
 GPUAGENT_BRANCH ?= main
 GPUAGENT_COMMIT ?= 9645999
 
-ROCM_VERSION ?= 7.14.0rc1
-ROCM_TARBALL_URL ?= https://rocm.prereleases.amd.com/tarball-multi-arch/therock-dist-linux-multiarch-7.14.0rc1.tar.gz
+ROCM_VERSION ?= 7.14.0rc2
+ROCM_TARBALL_URL ?= https://rocm.prereleases.amd.com/tarball-multi-arch/therock-dist-linux-multiarch-7.14.0rc2.tar.gz
 RVS_TARBALL_URL ?= https://repo.amd.com/rocm/rvs/tarball/amdrocm7-rvs-1.4.24-454-Linux.tar.gz
 ROCM_APT_VERSION ?= .apt_7.2.1
 AINIC_VERSION ?= 1.117.5-a-56
