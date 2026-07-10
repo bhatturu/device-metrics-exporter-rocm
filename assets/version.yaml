@@ -32,11 +32,11 @@ assets:
     version : 7.2
 
   - name    : gpuagent_ual.bin.gz
-    version : 1.131.0-13
+    version : 1.133.0-2
     repo    : sw
     branch  : master
 
   - name    : gpuctl_ual
-    version : 1.131.0-13
+    version : 1.133.0-2
     repo    : sw
     branch  : master
