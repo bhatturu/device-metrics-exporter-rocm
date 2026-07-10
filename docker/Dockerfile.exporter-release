@@ -23,9 +23,11 @@ ARG GO_VERSION=1.25.11
 ARG GO_SHA256=34f14304e856893f4ba30c2cacfe93906e9de7915c5f6aaaf3a81cdccd7ba30b
 
 # build toolchain (full ubi9 has dnf/yum) + go
+# libnl3/libmnl provide libnl-3.so.200 / libnl-genl-3.so.200 / libmnl.so.0,
+# which libamd_smi.so DT_NEEDs — the linker requires them present at link time.
 RUN dnf install -y --allowerasing \
         git gcc gcc-c++ make automake libtool curl unzip which cmake autoconf \
-        glibc-static libstdc++-static wget tar gzip findutils \
+        glibc-static libstdc++-static wget tar gzip findutils libnl3 libmnl \
     && dnf clean all
 RUN wget -q https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz \
     && echo "${GO_SHA256}  go${GO_VERSION}.linux-amd64.tar.gz" | sha256sum -c - \
@@ -52,12 +54,15 @@ RUN git config --global url."https://github.com/".insteadOf "git@github.com:" \
 # assets/), optionally refreshed from the therock tarball when AMDSMI_FROM_TARBALL=1
 COPY amdsmi.h /tmp/amdsmi/amdsmi.h
 COPY libamd_smi.so.* /tmp/amdsmi/
+COPY librocm_sysdeps_*.so* /tmp/amdsmi/
+# 7.14 amdsmi DT_NEEDEDs the rocm_sysdeps netlink libs; extract them too.
 RUN if [ "${AMDSMI_FROM_TARBALL}" = "1" ]; then \
         echo "Refreshing amdsmi from tarball ${ROCM_TARBALL_URL}"; \
         mkdir -p /tmp/smi && curl -fSL "${ROCM_TARBALL_URL}" \
-          | tar -xz -C /tmp/smi --wildcards --no-anchored 'amdsmi.h' 'libamd_smi.so*' && \
+          | tar -xz -C /tmp/smi --wildcards --no-anchored 'amdsmi.h' 'libamd_smi.so*' 'librocm_sysdeps_*.so*' && \
         rm -rf /tmp/amdsmi && mkdir -p /tmp/amdsmi && \
         cp -a /tmp/smi/lib/libamd_smi.so* /tmp/amdsmi/ && \
+        cp -a /tmp/smi/lib/rocm_sysdeps/lib/librocm_sysdeps_*.so* /tmp/amdsmi/ && \
         cp -a /tmp/smi/include/amd_smi/amdsmi.h /tmp/amdsmi/amdsmi.h ; \
     fi
 
@@ -71,6 +76,7 @@ RUN set -e; vendor=${GPUAGENT_SRC}/sw/nic/third-party/rocm/amd_smi_lib; \
     (cd $vendor/x86_64/lib && \
         ln -sf libamd_smi.so.${so_ver} libamd_smi.so.${so_maj} && \
         ln -sf libamd_smi.so.${so_maj} libamd_smi.so); \
+    cp -a /tmp/amdsmi/librocm_sysdeps_*.so* $vendor/x86_64/lib/ 2>/dev/null || true; \
     mkdir -p $vendor/include/amd_smi && \
     cp /tmp/amdsmi/amdsmi.h $vendor/include/amd_smi/amdsmi.h
 
@@ -85,7 +91,10 @@ RUN if ls /patches/*.patch >/dev/null 2>&1; then \
 # index, which the RHEL9 ld requires), then build the gpuagent binaries.
 # Strip the (unstripped, ~84MB) C++ gpuagent binaries to shed debug symbols
 # before they are COPYed into the runtime image (matches the old asset flow).
-RUN cd ${GPUAGENT_SRC} && make gopkglist \
+# LD_LIBRARY_PATH prepend lets ld resolve the rocm_sysdeps netlink DT_NEEDEDs.
+RUN cd ${GPUAGENT_SRC} \
+    && export LD_LIBRARY_PATH=${GPUAGENT_SRC}/sw/nic/third-party/rocm/amd_smi_lib/x86_64/lib:$LD_LIBRARY_PATH \
+    && make gopkglist \
     && make -C sw/nic/gpuagent build-libs \
     && find sw/nic/build -name '*.a' -exec ranlib {} \; \
     && make -C sw/nic/gpuagent all \

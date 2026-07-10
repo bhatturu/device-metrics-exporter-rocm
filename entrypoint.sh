@@ -12,6 +12,7 @@ term() {
 }
 
 PATH=/usr/local/go/bin:$PATH
+export DOCKER_BUILDKIT=0
 
 mkdir -p ${dockerdir}
 echo 'DOCKER_OPTS="--config-file=/etc/docker/daemon.json"' >> /etc/default/docker
