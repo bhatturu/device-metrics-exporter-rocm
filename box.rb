@@ -1,4 +1,4 @@
-from "registry.test.pensando.io:5000/device-metrics-exporter-build:v1.15"
+from "registry.test.pensando.io:5000/device-metrics-exporter-build:v1.16"
 
 user = getenv("USER")
 group = getenv("GROUP_NAME")
