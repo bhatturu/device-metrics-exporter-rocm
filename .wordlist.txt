@@ -374,4 +374,8 @@ CWE
 MxGPU
 UAL
 UUID
+journalctl
+sriov
+subdirectory
 vPod
+xu

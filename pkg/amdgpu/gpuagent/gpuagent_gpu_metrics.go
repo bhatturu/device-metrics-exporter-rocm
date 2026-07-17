@@ -2615,9 +2615,9 @@ func (ga *GPUAgentGPUClient) updateGPUInfoToMetrics(
 		ga.fl.logWithValidateAndExport(gpuid, ga.metrics.gpuTotalVram, exportermetrics.GPUMetricField_GPU_TOTAL_VRAM.String(), labels, totalVRAM)
 		// suppress used and derived free together when used is the NA sentinel
 		if usedVRAMValid {
-		ga.fl.logWithValidateAndExport(gpuid, ga.metrics.gpuUsedVram, exportermetrics.GPUMetricField_GPU_USED_VRAM.String(), labels, usedVRAM)
-		ga.fl.logWithValidateAndExport(gpuid, ga.metrics.gpuFreeVram, exportermetrics.GPUMetricField_GPU_FREE_VRAM.String(), labels, freeVRAM)
-	}
+			ga.fl.logWithValidateAndExport(gpuid, ga.metrics.gpuUsedVram, exportermetrics.GPUMetricField_GPU_USED_VRAM.String(), labels, usedVRAM)
+			ga.fl.logWithValidateAndExport(gpuid, ga.metrics.gpuFreeVram, exportermetrics.GPUMetricField_GPU_FREE_VRAM.String(), labels, freeVRAM)
+		}
 	}
 	xgmiStats := stats.XGMILinkStats
 	if xgmiStats != nil {
