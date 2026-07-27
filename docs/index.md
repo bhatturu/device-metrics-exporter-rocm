@@ -64,7 +64,7 @@ See [GPU Metrics List](./configuration/metricslist.md) for the complete list.
 | N/A (host nicctl)                     | nic-v1.0.0             | Pollara 400    |
 | N/A (host nicctl)                     | nic-v1.0.1             | Pollara 400    |
 | 1.117.5-a-56                          | nic-v1.1.0             | Pollara 400    |
-| 1.117.5-a-56<br>1.117.6-a-77          | nic-v1.2.0             | Pollara 400    |
+| 1.117.5-a-56<br>1.117.5-a-77          | nic-v1.2.0             | Pollara 400    |
 
 **Note:** The debian exporter does not have any firmware version dependencies and works on all firmware versions.
 
