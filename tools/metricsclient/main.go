@@ -193,7 +193,7 @@ func setError(socketPath, filepath string) error {
 	return nil
 }
 
-func getGpuAgent(port, socketPath string, isJson bool) {
+func getGpuAgent(port, socketPath string, isJson bool, filter *amdgpu.GPUGetFilter) {
 	addrString := ""
 	if socketPath != "" {
 		addrString = fmt.Sprintf("unix://%s", socketPath)
@@ -214,7 +214,7 @@ func getGpuAgent(port, socketPath string, isJson bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	resp, err := client.GPUGet(ctx, &amdgpu.GPUGetRequest{})
+	resp, err := client.GPUGet(ctx, &amdgpu.GPUGetRequest{Filter: filter})
 	if err != nil {
 		fmt.Printf("GPUGet call failed: %v\n", err)
 		return
@@ -545,8 +545,34 @@ var gpuctlCmd = &cobra.Command{
 		jsonOut, _ := cmd.Flags().GetBool("json")
 
 		portStr, socketStr := determineGPUAgentConnection(port, socket)
-		getGpuAgent(portStr, socketStr, jsonOut)
+		getGpuAgent(portStr, socketStr, jsonOut, gpuGetFilterFromFlags(cmd))
 	},
+}
+
+// gpuGetFilterFromFlags builds a GPUGetFilter from the --skip-* flags, or nil
+// when none are set (fetch everything).
+func gpuGetFilterFromFlags(cmd *cobra.Command) *amdgpu.GPUGetFilter {
+	b := func(name string) bool { v, _ := cmd.Flags().GetBool(name); return v }
+	f := &amdgpu.GPUGetFilter{
+		SkipClockStatus:    b("skip-clock-status"),
+		SkipPCIeStatus:     b("skip-pcie-status"),
+		SkipXGMIStatus:     b("skip-xgmi-status"),
+		SkipProcessStatus:  b("skip-process-status"),
+		SkipUALinkStatus:   b("skip-ualink-status"),
+		SkipVRAMUsageStats: b("skip-vram-usage-stats"),
+		SkipECCStats:       b("skip-ecc-stats"),
+		SkipViolationStats: b("skip-violation-stats"),
+		SkipPCIeStats:      b("skip-pcie-stats"),
+		SkipXGMIStats:      b("skip-xgmi-stats"),
+		SkipActivityStats:  b("skip-activity-stats"),
+	}
+	if !f.SkipClockStatus && !f.SkipPCIeStatus && !f.SkipXGMIStatus &&
+		!f.SkipProcessStatus && !f.SkipUALinkStatus && !f.SkipVRAMUsageStats &&
+		!f.SkipECCStats && !f.SkipViolationStats && !f.SkipPCIeStats &&
+		!f.SkipXGMIStats && !f.SkipActivityStats {
+		return nil
+	}
+	return f
 }
 
 // Device map command
@@ -619,6 +645,18 @@ func init() {
 	gpuctlCmd.Flags().String("port", "", "gRPC port for gpuagent (use this for IP:port connection)")
 	gpuctlCmd.Flags().String("socket", globals.GPUAgentDefaultSocketPath, "Socket path for gpuagent connection")
 	gpuctlCmd.Flags().Bool("json", false, "Output in JSON format")
+	// GPUGetFilter skip flags; any set flag makes gpuagent skip that collector.
+	gpuctlCmd.Flags().Bool("skip-clock-status", false, "skip clock status")
+	gpuctlCmd.Flags().Bool("skip-pcie-status", false, "skip PCIe status")
+	gpuctlCmd.Flags().Bool("skip-xgmi-status", false, "skip XGMI error status")
+	gpuctlCmd.Flags().Bool("skip-process-status", false, "skip process list")
+	gpuctlCmd.Flags().Bool("skip-ualink-status", false, "skip UALink state")
+	gpuctlCmd.Flags().Bool("skip-vram-usage-stats", false, "skip VRAM usage")
+	gpuctlCmd.Flags().Bool("skip-ecc-stats", false, "skip ECC error counts")
+	gpuctlCmd.Flags().Bool("skip-violation-stats", false, "skip violation stats")
+	gpuctlCmd.Flags().Bool("skip-pcie-stats", false, "skip PCIe stats")
+	gpuctlCmd.Flags().Bool("skip-xgmi-stats", false, "skip XGMI counters")
+	gpuctlCmd.Flags().Bool("skip-activity-stats", false, "skip GPU activity and usage")
 
 	// Setup mock inband RAS command flags
 	setupMockInbandCmd.Flags().String("port", "", "gRPC port for gpuagent (use this for IP:port connection)")
