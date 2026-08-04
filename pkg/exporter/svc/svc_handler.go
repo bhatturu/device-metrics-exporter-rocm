@@ -199,11 +199,11 @@ func (s *SvcHandler) listenOnSocket(socketPath string) (net.Listener, error) {
 	logger.Log.Printf("starting listening on socket : %v", socketPath)
 	lis, err := net.Listen("unix", socketPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to listen on port: %v", err)
+		return nil, fmt.Errorf("failed to listen on socket %s: %w", socketPath, err)
 	}
-	// world readable socket
-	if err = os.Chmod(socketPath, 0777); err != nil {
-		logger.Log.Printf("socket %v chmod to 777 failed, set it on host", socketPath)
+	// Restrict the health gRPC socket to the owner (root) only
+	if err = os.Chmod(socketPath, 0600); err != nil {
+		logger.Log.Printf("socket %v chmod to 0600 failed, set it on host: %v", socketPath, err)
 	}
 	logger.Log.Printf("listening on socket %v", socketPath)
 
