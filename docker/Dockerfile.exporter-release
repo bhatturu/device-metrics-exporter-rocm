@@ -54,8 +54,8 @@ RUN git config --global url."https://github.com/".insteadOf "git@github.com:" \
 # assets/), optionally refreshed from the therock tarball when AMDSMI_FROM_TARBALL=1
 COPY amdsmi.h /tmp/amdsmi/amdsmi.h
 COPY libamd_smi.so.* /tmp/amdsmi/
-COPY librocm_sysdeps_*.so* /tmp/amdsmi/
-# 7.14 amdsmi DT_NEEDEDs the rocm_sysdeps netlink libs; extract them too.
+# NOTE: amdsmi SO 27 (develop) links libnl-3/libmnl directly (installed via dnf),
+# not the renamed librocm_sysdeps_* libs. Only the tarball path re-adds those.
 RUN if [ "${AMDSMI_FROM_TARBALL}" = "1" ]; then \
         echo "Refreshing amdsmi from tarball ${ROCM_TARBALL_URL}"; \
         mkdir -p /tmp/smi && curl -fSL "${ROCM_TARBALL_URL}" \
@@ -120,11 +120,18 @@ ARG AMDGPU_REPO_URL=https://repo.radeon.com
 # S3 therock nightly tarball (optional). Set ROCM_TARBALL_URL to install ROCm
 # from a therock tarball instead of repo.radeon.com.
 ARG ROCM_TARBALL_URL=""
+# 1 = override runtime amd_smi with the tarball's copy. Default 0 keeps the
+# pre-staged asset .so (required so a custom amdsmi build survives at runtime).
+ARG AMDSMI_FROM_TARBALL=0
 
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/amd/bin/:/opt/rocm/bin/:/opt/nic/bin:/opt/nic/sbin
+# /home/amd/lib holds the staged libamd_smi.so.* + its compat symlinks; it MUST be
+# on the search path so gpuagent's DT_NEEDED (libamd_smi.so.26) resolves to the
+# develop SO-27 lib via the .so.26 compat symlink. LD_PRELOAD alone is insufficient
+# once the SONAME differs (26 vs 27), so the dir must be searchable here.
 # /opt/rocm-${ROCM_VERSION}/lib/rocm_sysdeps/lib is needed for therock tarball builds
 # (librocm_sysdeps_drm.so.2 etc.). For repo.radeon.com builds it is a no-op.
-ENV LD_LIBRARY_PATH=/opt/rocm/lib:/opt/rocm-${ROCM_VERSION}/lib/rocm_sysdeps/lib:$LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/home/amd/lib:/opt/rocm/lib:/opt/rocm-${ROCM_VERSION}/lib/rocm_sysdeps/lib:$LD_LIBRARY_PATH
 ENV GPUAGENT_EVENTS_DISABLE=1
 
 ADD install-rocm-tarball.sh /usr/local/bin/install-rocm-tarball.sh
@@ -172,7 +179,11 @@ RUN cd /home/amd/lib/ \
     && maj=$(echo "${real#libamd_smi.so.}" | cut -d. -f1) \
     && rm -f libamd_smi.so libamd_smi.so.${maj} \
     && ln -sf "${real}" "libamd_smi.so.${maj}" \
-    && ln -sf "${real}" libamd_smi.so
+    && ln -sf "${real}" libamd_smi.so \
+    # compat SONAME: the prebuilt UAL gpuagent DT_NEEDEDs libamd_smi.so.26 while
+    # the develop amdsmi is SO 27. ABI-verified symbol-compatible (same AMDSMI_1
+    # node, no missing symbols), so alias .so.26 -> the real .so so gpuagent loads.
+    && if [ "${maj}" != "26" ]; then ln -sf "${real}" libamd_smi.so.26; fi
 
 ADD ./rocpctl /home/amd/bin/rocpctl
 # collab-2.0.0: gpuagent + gpuctl come from prebuilt UAL assets staged by
