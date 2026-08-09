@@ -33,7 +33,6 @@ TESTRUNNER_RHEL_BASE_IMAGE ?= registry.access.redhat.com/ubi9/ubi:9.8
 # External repo builders
 GPUAGENT_BASE_IMAGE ?= ubuntu:22.04
 GPUAGENT_BUILDER_BASE_IMAGE ?= registry.access.redhat.com/ubi9/ubi:9.8
-GPUAGENT_BUILDER_IMAGE ?= gpuagent-builder:v1
 AMDSMI_BASE_IMAGE ?= registry.access.redhat.com/ubi9/ubi:9.6
 AMDSMI_BASE_UBUNTU22 ?= ubuntu:22.04
 AMDSMI_BASE_UBUNTU24 ?= ubuntu:24.04
@@ -75,7 +74,6 @@ export AMDSMI_BASE_IMAGE
 export AMDSMI_BASE_UBUNTU22
 export AMDSMI_BASE_UBUNTU24
 export AMDSMI_BASE_AZURE
-export GPUAGENT_BUILDER_IMAGE
 export GPUAGENT_BUILDER_BASE_IMAGE
 export ROCPROFILER_BASE_UBUNTU22
 
@@ -120,7 +118,14 @@ HTML_DIR := $(BUILD_DIR)/html
 
 # library branch to build amdsmi libraries for gpuagent
 AMDSMI_REPO   ?= https://github.com/ROCm/rocm-systems.git
-AMDSMI_BRANCH ?= release/therock-7.14
+# amdsmi source branch bumped release/therock-7.14 -> release/therock-10.0
+# to match the ROCM_VERSION tarball bump below. This branch/commit pin only drives the
+# from-source amdsmi build (Makefile.compile amdsmi-compile), which is the AMDSMI_FROM_TARBALL=0
+# escape hatch; the default path extracts amdsmi from the therock tarball (ROCM_TARBALL_URL).
+# TODO: AMDSMI_COMMIT is still the 7.14 SHA and does NOT exist on
+# release/therock-10.0. Re-pin to a matching 10.0 commit SHA before using the
+# from-source amdsmi escape hatch (AMDSMI_FROM_TARBALL=0).
+AMDSMI_BRANCH ?= release/therock-10.0
 AMDSMI_COMMIT ?= 53a7a4f3fe6019a551506285f9f2bb86dfddf9b4
 AMDSMI_SUBDIR ?= projects/amdsmi
 GIMSMI_BRANCH ?= release/9.1.x.K-rc
@@ -132,9 +137,28 @@ GPUAGENT_REPO ?= https://github.com/ROCm/gpu-agent.git
 GPUAGENT_BRANCH ?= main
 GPUAGENT_COMMIT ?= 84bc85f69e41c9b386dd82afa842987b3e549b00
 
-ROCM_VERSION ?= 7.14.0
-ROCM_TARBALL_URL ?= https://repo.amd.com/rocm/tarball-multi-arch/therock-dist-linux-multiarch-7.14.0.tar.gz
+# authoritative ROCm tarball defaults (not overridden in dev.env).
+# ROCM_VERSION must match the tarball's version string (extracts to
+# /opt/rocm-${ROCM_VERSION}/). Keep URL version in sync; HTTP-200-verify on bump.
+ROCM_VERSION ?= 10.0.0rc2
+ROCM_TARBALL_URL ?= https://rocm.prereleases.amd.com/tarball-multi-arch/therock-dist-linux-multiarch-10.0.0rc2.tar.gz
 RVS_TARBALL_URL ?= https://repo.amd.com/rocm/rvs/tarball/amdrocm7-rvs-1.5.122-579-Linux.tar.gz
+
+# download the ~9 GB ROCm tarball ONCE to the host, then bind-mount it
+# into every docker build (gpuagent-build stage, release runtime, and the 3
+# profiler libbuilder images) via a buildx `--build-context`. The in-Docker
+# wget/curl of ROCM_TARBALL_URL is removed — builds read the mounted local file.
+# ROCM_TARBALL_DIR is the named build context; ROCM_TARBALL_FILE is the fixed
+# filename inside it that Dockerfiles mount.
+ROCM_TARBALL_DIR := $(TOP_DIR)/build/rocm-tarball
+ROCM_TARBALL_FILE := therock.tar.gz
+ROCM_TARBALL_PATH := $(ROCM_TARBALL_DIR)/$(ROCM_TARBALL_FILE)
+
+# Two-knob source model. Defaults live in dev.env; these `?=`
+# fallbacks keep the build robust if dev.env is not sourced. See dev.env for the
+# authoritative documentation of each knob.
+AMDSMI_FROM_TARBALL ?= 1
+GPUAGENT_FROM_SOURCE ?= 1
 ROCM_APT_VERSION ?= .apt_7.2.1
 AINIC_VERSION ?= 1.117.5-a-56
 
@@ -166,6 +190,11 @@ export ROCM_VERSION
 export ROCM_APT_VERSION
 export ROCM_TARBALL_URL
 export RVS_TARBALL_URL
+# export so docker/Makefile (sub-make) can pass --build-context rocm-tarball
+export ROCM_TARBALL_DIR
+export AMDSMI_FROM_TARBALL
+export AMDSMI_FROM_TARBALL
+export GPUAGENT_FROM_SOURCE
 
 ASSETS_PATH :=${TOP_DIR}/assets
 
@@ -216,7 +245,7 @@ endif
 # SR-IOV debian package is versioned independently (pinned to 1.0.0-X), only
 # the release label suffix (e.g. "-3" from v1.5.1-3 or exporter-0.0.1-3) is
 # carried over from DEBIAN_VERSION.
-DEBIAN_SRIOV_VERSION := $(shell echo "$(DEBIAN_VERSION)" | sed -E 's/^[0-9]+\.[0-9]+\.[0-9]+/1.0.0/')
+DEBIAN_SRIOV_VERSION := $(shell echo "$(DEBIAN_VERSION)" | sed -E 's/^[0-9]+\.[0-9]+\.[0-9]+/1.1.0/')
 
 # Remove 'v' from PROJECT_VERSION to get PACKAGE_VERSION
 PACKAGE_VERSION := $(subst v,,$(PROJECT_VERSION))
@@ -270,6 +299,115 @@ endif
 
 TO_GEN_TESTRUNNER := pkg/testrunner/proto
 GEN_DIR_TESTRUNNER := $(TOP_DIR)/pkg/testrunner/
+
+# ---------------------------------------------------------------------------
+# Shared gpuagent producer.
+#
+# Builds gpuagent + gpuctl + gpuagent_mock + gpuagent_gim ONCE per make
+# invocation from source, against the (tarball) amdsmi, by running the
+# `gpuagent-build` stage of the release Dockerfile standalone
+# (docker build --target gpuagent-build) and extracting the binaries to
+# build/gpuagent/. All gpuagent-consuming targets (docker, docker-mock,
+# docker-sriov, debpkg, rpmpkg, debpkg-sriov, rpmpkg-sriov) depend on the stamp,
+# so `make docker debpkg rpmpkg` in a single invocation builds gpuagent exactly
+# once. The stamp file is the "once per make invocation" guarantee.
+#
+# GPUAGENT_FROM_SOURCE=0 disables the producer; consumers fall back to the
+# committed assets/gpuagent_*.bin.gz prebuilt blobs (escape hatch).
+#
+# NOTE: this deliberately reuses the existing Dockerfile stage rather than
+# attempting a host build — the gpuagent from-source build is irreducibly
+# containerized (ubi9 toolchain, Go 1.25.11, source pinned at
+# /usr/src/github.com/ROCm/gpu-agent, recursive submodules, repo patches,
+# ranlib fixes).
+# ---------------------------------------------------------------------------
+GPUAGENT_BUILD_DIR := $(TOP_DIR)/build/gpuagent
+GPUAGENT_BUILD_STAMP := $(GPUAGENT_BUILD_DIR)/.stamp
+GPUAGENT_STAGED_IMAGE ?= gpuagent-staged:$(EXPORTER_IMAGE_TAG)
+GPUAGENT_STAGE_BIN := /usr/src/github.com/ROCm/gpu-agent/sw/nic/build/x86_64/sim/bin
+
+# When GPUAGENT_FROM_SOURCE=1 (default) gpuagent-consuming targets depend on the
+# producer stamp; when =0 the dependency is empty and consumers use assets/.
+ifeq ($(GPUAGENT_FROM_SOURCE),1)
+GPUAGENT_PRODUCER_DEP := $(GPUAGENT_BUILD_STAMP)
+else
+GPUAGENT_PRODUCER_DEP :=
+endif
+
+# The mock build (docker-mock / e2e) uses the mock gpuagent, which needs no real
+# GPU libs, so it defaults to the committed assets/gpuagent_mock.bin.gz blob and
+# skips the gpuagent source build AND the ~9 GB ROCm tarball download. Override
+# with MOCK_GPUAGENT_FROM_SOURCE=1 to build the mock agent from source instead.
+MOCK_GPUAGENT_FROM_SOURCE ?= 0
+ifeq ($(MOCK_GPUAGENT_FROM_SOURCE),1)
+MOCK_GPUAGENT_PRODUCER_DEP := $(GPUAGENT_BUILD_STAMP)
+else
+MOCK_GPUAGENT_PRODUCER_DEP :=
+endif
+
+# fetch the ROCm tarball once. Idempotent — skips if the file already
+# exists (set ROCM_TARBALL_FORCE=1 to re-download). Only needed in tarball mode
+# (AMDSMI_FROM_TARBALL=1); ROCM_TARBALL_DEP is empty when =0 so nothing downloads.
+ifeq ($(AMDSMI_FROM_TARBALL),1)
+ROCM_TARBALL_DEP := $(ROCM_TARBALL_PATH)
+else
+ROCM_TARBALL_DEP :=
+endif
+
+.PHONY: rocm-tarball-fetch
+rocm-tarball-fetch: $(ROCM_TARBALL_PATH)
+
+$(ROCM_TARBALL_PATH):
+	@if [ -n "$(ROCM_TARBALL_FORCE)" ] || [ ! -s "$(ROCM_TARBALL_PATH)" ]; then \
+		echo "Downloading ROCm tarball once -> $(ROCM_TARBALL_PATH)"; \
+		mkdir -p $(ROCM_TARBALL_DIR); \
+		curl -fSL "$(ROCM_TARBALL_URL)" -o $(ROCM_TARBALL_PATH).tmp && \
+		mv -f $(ROCM_TARBALL_PATH).tmp $(ROCM_TARBALL_PATH); \
+	else \
+		echo "ROCm tarball already present: $(ROCM_TARBALL_PATH) (set ROCM_TARBALL_FORCE=1 to re-download)"; \
+	fi
+
+.PHONY: gpuagent-build
+gpuagent-build: $(GPUAGENT_BUILD_STAMP)
+
+$(GPUAGENT_BUILD_STAMP): $(ROCM_TARBALL_DEP)
+	@echo "Building shared gpuagent binaries from source (GPUAGENT_FROM_SOURCE=1, AMDSMI_FROM_TARBALL=$(AMDSMI_FROM_TARBALL))"
+	# Stage the amdsmi header/lib + gpuagent patches the gpuagent-build stage
+	# COPYs from the docker/ build context. In tarball mode the stage overrides
+	# these from the tarball, but the COPY lines still need a file present.
+	@mkdir -p $(TOP_DIR)/docker/patch-gpuagent
+	@cp -vfL $(ASSETS_PATH)/amd_smi_lib/x86_64/RHEL9/lib/amdsmi.h $(TOP_DIR)/docker/amdsmi.h
+	@cp -vfL $(ASSETS_PATH)/amd_smi_lib/x86_64/RHEL9/lib/libamd_smi.so.*.*.* $(TOP_DIR)/docker/
+	@cp -vfL $(ASSETS_PATH)/amd_smi_lib/x86_64/RHEL9/lib/librocm_sysdeps_*.so* $(TOP_DIR)/docker/ 2>/dev/null || true
+	@if ls $(TOP_DIR)/patch/gpuagent/*.patch >/dev/null 2>&1; then \
+		cp -vf $(TOP_DIR)/patch/gpuagent/*.patch $(TOP_DIR)/docker/patch-gpuagent/; \
+	fi
+	# Build only the gpuagent-build stage (produces all four shared binaries).
+	# the once-downloaded tarball is bind-mounted via the named build
+	# context `rocm-tarball` (only in tarball mode); the stage reads the local file.
+	# DOCKER_BUILDKIT=1 is required for --build-context / RUN --mount and overrides
+	# any DOCKER_BUILDKIT=0 set by the CI wrapper.
+	# BuildKit's integrated (docker:default) resolver ignores daemon.json
+	# insecure-registries when resolving FROM-image metadata over HTTP, unlike the
+	# classic client. Pre-pull the builder base with the classic client so BuildKit
+	# resolves it from the local store instead of over HTTPS.
+	docker pull $(GPUAGENT_BUILDER_BASE_IMAGE)
+	DOCKER_BUILDKIT=1 docker build --target gpuagent-build \
+		$(if $(GPUAGENT_BUILDER_BASE_IMAGE),--build-arg GPUAGENT_BUILDER_BASE_IMAGE=$(GPUAGENT_BUILDER_BASE_IMAGE)) \
+		$(if $(GPUAGENT_REPO),--build-arg GPUAGENT_REPO=$(GPUAGENT_REPO)) \
+		$(if $(GPUAGENT_COMMIT),--build-arg GPUAGENT_COMMIT=$(GPUAGENT_COMMIT)) \
+		--build-arg AMDSMI_FROM_TARBALL=$(AMDSMI_FROM_TARBALL) \
+		$(if $(filter 1,$(AMDSMI_FROM_TARBALL)),--build-context rocm-tarball=$(ROCM_TARBALL_DIR)) \
+		-t $(GPUAGENT_STAGED_IMAGE) $(TOP_DIR)/docker -f $(TOP_DIR)/docker/Dockerfile.exporter-release
+	# Extract the four shared binaries to build/gpuagent/ (once).
+	@mkdir -p $(GPUAGENT_BUILD_DIR)
+	@cid=$$(docker create $(GPUAGENT_STAGED_IMAGE)); \
+	  for b in gpuagent gpuctl gpuagent_mock gpuagent_gim; do \
+	    echo "extracting $$b -> $(GPUAGENT_BUILD_DIR)/$$b"; \
+	    docker cp $$cid:$(GPUAGENT_STAGE_BIN)/$$b $(GPUAGENT_BUILD_DIR)/$$b; \
+	  done; \
+	  docker rm -f $$cid
+	@touch $@
 
 include Makefile.build
 include Makefile.compile
@@ -429,28 +567,57 @@ amdgpuhealth:
 	@echo "building amd gpu health util"
 	CGO_ENABLED=0 go build -C tools/amd-gpu-health -o $(CURDIR)/bin/amdgpuhealth
 
-.PHONY: docker-cicd
-docker-cicd: gen amdexporter
-	echo "Building cicd docker for publish"
-	${MAKE} -C docker docker-cicd TOP_DIR=$(CURDIR) AMDSMI_FROM_TARBALL=$(AMDSMI_FROM_TARBALL) ROCM_TARBALL_URL=$(ROCM_TARBALL_URL)
+# `docker` and `docker-sriov` are composed from single-purpose helper targets via
+# prerequisites, so no build step is written twice. Shared prerequisites (gen,
+# amdexporter, and the gpuagent producer $(GPUAGENT_PRODUCER_DEP)) are built ONCE
+# per make run even though several helpers depend on them — that is the point of
+# using make dependencies here.
+#
+#   make docker        = both exporter images (non-SR-IOV + SR-IOV) + all deb + all rpm
+#   make docker-sriov  = SR-IOV image + SR-IOV deb + SR-IOV rpm only (a subset)
+#
+# The former `docker-cicd` target is folded into the image helper (HOURLY_TAG
+# always applied). AINIC (docker-ainic) and azure (docker-azure) stay separate.
+
+# both exporter images (non-SR-IOV + SR-IOV), saved as tar.gz
+.PHONY: docker-image
+docker-image: gen amdexporter $(GPUAGENT_PRODUCER_DEP)
+	${MAKE} -C docker TOP_DIR=$(CURDIR) HOURLY_TAG_LABEL=$(HOURLY_TAG_LABEL) AMDSMI_FROM_TARBALL=$(AMDSMI_FROM_TARBALL) GPUAGENT_FROM_SOURCE=$(GPUAGENT_FROM_SOURCE) GPUAGENT_BUILD_DIR=$(GPUAGENT_BUILD_DIR) ROCM_TARBALL_URL=$(ROCM_TARBALL_URL)
 	${MAKE} -C docker docker-save TOP_DIR=$(CURDIR)
+	${MAKE} -C docker docker-sriov-save TOP_DIR=$(CURDIR)
+
+# SR-IOV exporter image only, saved as tar.gz
+.PHONY: docker-image-sriov
+docker-image-sriov: gen amdexporter $(GPUAGENT_PRODUCER_DEP)
+	echo "Building docker for sriov driver rhel9"
+	${MAKE} -C docker docker-sriov TOP_DIR=$(CURDIR) GPUAGENT_FROM_SOURCE=$(GPUAGENT_FROM_SOURCE) GPUAGENT_BUILD_DIR=$(GPUAGENT_BUILD_DIR)
+	${MAKE} -C docker docker-sriov-save TOP_DIR=$(CURDIR)
+
+# all deb (Ubuntu 22 + 24) + rpm (RHEL9), non-SR-IOV + SR-IOV. One libcopy per OS
+# builds both variants (no repeated libcopy). ub24 is a recursive
+# UBUNTU_VERSION=noble sub-make because UBUNTU_VERSION is process-global.
+# EXPORTER_PREBUILT=1: amdexporter is already built once as a prereq above, so the
+# package sub-makes skip their own `${MAKE} amdexporter` rebuild (the binary is a
+# CGO-static amd64 build, identical across ub22/ub24/rhel9). Standalone
+# `make debpkg` / `make rpmpkg` (no EXPORTER_PREBUILT) still rebuild fresh.
+.PHONY: docker-pkgs
+docker-pkgs: gen amdexporter $(GPUAGENT_PRODUCER_DEP)
+	${MAKE} EXPORTER_PREBUILT=1 libcopy-assets-RHEL9 rpmpkg rpmpkg-sriov rpmpkg-ual
+	${MAKE} EXPORTER_PREBUILT=1 libcopy-assets-UBUNTU22 debpkg debpkg-sriov debpkg-ual
+	${MAKE} EXPORTER_PREBUILT=1 UBUNTU_VERSION=noble libcopy-assets-UBUNTU24 debpkg debpkg-sriov debpkg-ual
+
+# SR-IOV-only deb (Ubuntu 22 + 24) + rpm (RHEL9); one libcopy per OS.
+.PHONY: docker-pkgs-sriov
+docker-pkgs-sriov: gen amdexporter $(GPUAGENT_PRODUCER_DEP)
+	${MAKE} EXPORTER_PREBUILT=1 libcopy-assets-RHEL9 rpmpkg-sriov
+	${MAKE} EXPORTER_PREBUILT=1 libcopy-assets-UBUNTU22 debpkg-sriov
+	${MAKE} EXPORTER_PREBUILT=1 UBUNTU_VERSION=noble libcopy-assets-UBUNTU24 debpkg-sriov
 
 .PHONY: docker
-docker: gen amdexporter
-	${MAKE} -C docker TOP_DIR=$(CURDIR) AMDSMI_FROM_TARBALL=$(AMDSMI_FROM_TARBALL) ROCM_TARBALL_URL=$(ROCM_TARBALL_URL)
-	${MAKE} -C docker docker-save TOP_DIR=$(CURDIR)
-
-# gpuagent is now cloned + built inside `make docker` (multi-stage Dockerfile),
-# so the standalone docker-tarball-amdsmi chain has been retired. To refresh
-# amdsmi from the tarball at image-build time: `make docker AMDSMI_FROM_TARBALL=1
-# ROCM_TARBALL_URL=<url>`. To refresh the committed assets/ copy: run
-# `make amdsmi-from-tarball amdsmi-sync-assets`.
+docker: docker-image docker-pkgs
 
 .PHONY: docker-sriov
-docker-sriov: gen amdexporter
-	echo "Building docker for sriov driver rhel9"
-	${MAKE} -C docker docker-sriov TOP_DIR=$(CURDIR)
-	${MAKE} -C docker docker-sriov-save TOP_DIR=$(CURDIR)
+docker-sriov: docker-image-sriov docker-pkgs-sriov
 
 .PHONY: docker-ainic
 docker-ainic: gen amdexporter
@@ -458,38 +625,47 @@ docker-ainic: gen amdexporter
 	${MAKE} -C docker docker-ainic TOP_DIR=$(CURDIR)
 	${MAKE} -C docker docker-save  TOP_DIR=$(CURDIR) AINIC=1
 
-# for development we use ubuntu based
+# for development we use ubuntu based. Pinned to the prebuilt sriov blob
+# (GPUAGENT_FROM_SOURCE=0) to preserve its current behavior without wiring the
+# shared source producer.
 .PHONY: docker-sriov-ub22
 docker-sriov-ub22: gen amdexporter
 	echo "Building docker for sriov driver ub22"
-	${MAKE} -C docker docker-sriov-ub22 TOP_DIR=$(CURDIR)
+	${MAKE} -C docker docker-sriov-ub22 TOP_DIR=$(CURDIR) GPUAGENT_FROM_SOURCE=0
 	${MAKE} -C docker docker-sriov-save TOP_DIR=$(CURDIR)
 
 .PHONY: docker-mock
-docker-mock: gen
+docker-mock: gen $(MOCK_GPUAGENT_PRODUCER_DEP)
 	GO_BUILD_TAGS=mock ${MAKE} amdexporter
 	${MAKE} mock-rocpctl
-	${MAKE} -C docker TOP_DIR=$(CURDIR) EXPORTER_IMAGE_NAME=$(EXPORTER_IMAGE_NAME)-mock docker-mock
+	${MAKE} -C docker TOP_DIR=$(CURDIR) EXPORTER_IMAGE_NAME=$(EXPORTER_IMAGE_NAME)-mock GPUAGENT_FROM_SOURCE=$(MOCK_GPUAGENT_FROM_SOURCE) GPUAGENT_BUILD_DIR=$(GPUAGENT_BUILD_DIR) docker-mock
 	${MAKE} -C docker docker-save TOP_DIR=$(CURDIR) EXPORTER_IMAGE_NAME=$(EXPORTER_IMAGE_NAME)-mock
 
 .PHONY: docker-test-runner
 docker-test-runner: gen-test-runner amdtestrunner
 	${MAKE} -C docker/testrunner TOP_DIR=$(CURDIR) docker \
-		ROCM_VERSION=$(ROCM_VERSION) \
-		ROCM_TARBALL_URL=$(ROCM_TARBALL_URL) \
+		ROCM_VERSION=$(TESTRUNNER_ROCM_VERSION) \
+		ROCM_TARBALL_URL=$(TESTRUNNER_ROCM_TARBALL_URL) \
 		RVS_TARBALL_URL=$(RVS_TARBALL_URL)
+
+# AGFHC=1 pins ROCm to the rocm7 tarball (AGFHC bundle is rocm7-only, see dev.env);
+# the default (RVS-only) build uses the repo-wide ROCM_VERSION.
+TESTRUNNER_ROCM_VERSION = $(if $(filter 1,$(AGFHC)),$(AGFHC_ROCM_VERSION),$(ROCM_VERSION))
+TESTRUNNER_ROCM_TARBALL_URL = $(if $(filter 1,$(AGFHC)),$(AGFHC_ROCM_TARBALL_URL),$(ROCM_TARBALL_URL))
 
 .PHONY: docker-test-runner-cicd
 docker-test-runner-cicd: gen-test-runner amdtestrunner
 	${MAKE} -C docker/testrunner TOP_DIR=$(CURDIR) docker-cicd \
-		ROCM_VERSION=$(ROCM_VERSION) \
-		ROCM_TARBALL_URL=$(ROCM_TARBALL_URL) \
+		ROCM_VERSION=$(TESTRUNNER_ROCM_VERSION) \
+		ROCM_TARBALL_URL=$(TESTRUNNER_ROCM_TARBALL_URL) \
 		RVS_TARBALL_URL=$(RVS_TARBALL_URL)
 	${MAKE} -C docker/testrunner TOP_DIR=$(CURDIR) docker-save
 
+# Pinned to the prebuilt blob path (GPUAGENT_FROM_SOURCE=0) so it stages
+# gpuagent/gpuctl from assets/ without the shared source producer.
 .PHONY: docker-azure
 docker-azure: gen amdexporter
-	${MAKE} -C docker azure TOP_DIR=$(CURDIR)
+	${MAKE} -C docker azure TOP_DIR=$(CURDIR) GPUAGENT_FROM_SOURCE=0
 	${MAKE} -C docker docker-save TOP_DIR=$(CURDIR) DOCKER_CONTAINER_IMAGE=${EXPORTER_IMAGE_NAME}-${EXPORTER_IMAGE_TAG}-azure
 
 .PHONY:checks

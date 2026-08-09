@@ -35,6 +35,7 @@ IFOE skills: `/validate-ifoe-exporter <user>@<host>` is the authoritative IFOE m
 
 - **Metric name prefix is `amd_*`**, derived from `MetricsFieldPrefix` in `config.json`. When grepping `/metrics` output, search `^amd_ifoe_`, never `^ifoe_` or `^gpu_ual_ifoe_` — those won't match and a test asserting on them will silently pass.
 - **Test port discovery:** any test that hits `/metrics` on a shared lab host must read `ServerPort` from the target's `/etc/metrics/config.json` first. The hourly build owns port 5000 — never hardcode it.
+- **Code comments: technical and bare-minimum.** Explain only the non-obvious WHY (constraint, invariant, gotcha). No prose, no history, no restating what the code does. One line where one line suffices. Applies to Makefiles, shell, Go, Dockerfiles.
 
 ## Build gotchas
 

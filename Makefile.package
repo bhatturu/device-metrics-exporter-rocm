@@ -1,9 +1,32 @@
+# gpuagent source model. GPUAGENT_FROM_SOURCE / GPUAGENT_BUILD_DIR /
+# GPUAGENT_PRODUCER_DEP are set + exported by the root Makefile before this file
+# is included; these `?=` fallbacks keep the package targets usable standalone.
+GPUAGENT_FROM_SOURCE ?= 1
+GPUAGENT_BUILD_DIR ?= ${TOP_DIR}/build/gpuagent
+
 DEBIAN_CONTROL = ${TOP_DIR}/debian/DEBIAN/control
 DEBIAN_SRIOV_CONTROL = ${TOP_DIR}/debian-sriov/DEBIAN/control
 BUILD_VER_ENV = ${DEBIAN_VERSION}~$(UBUNTU_VERSION_NUMBER)
 BUILD_SRIOV_VER_ENV = ${DEBIAN_SRIOV_VERSION}~$(UBUNTU_VERSION_NUMBER)
 GPUAGENT_LIBS := ${ASSETS_PATH}/amd_smi_lib/x86_64/${UBUNTU_LIBDIR}/lib
 GPUAGENT_LIBS_RHEL9 := ${ASSETS_PATH}/amd_smi_lib/x86_64/RHEL9/lib
+
+# amd_smi lib source for deb/rpm. When AMDSMI_FROM_TARBALL=1 (default)
+# copy the SO-27 libs assembled from the once-downloaded therock tarball
+# (build/amdsmi-from-tarball/pkglib, produced by `make amdsmi-from-tarball`), so the
+# packages match the docker image instead of the stale committed SO-26 assets. When
+# =0 (escape hatch) fall back to the committed assets/amd_smi_lib tree. The tarball
+# lib is arch/OS-agnostic here (same x86_64 SO for RHEL9 + Ubuntu), so both point at
+# the same pkglib.
+ifeq ($(AMDSMI_FROM_TARBALL),1)
+AMDSMI_LIBS_SRC := ${AMDSMI_TARBALL_STAGE}/pkglib
+AMDSMI_LIBS_SRC_RHEL9 := ${AMDSMI_TARBALL_STAGE}/pkglib
+AMDSMI_PKG_DEP := amdsmi-from-tarball
+else
+AMDSMI_LIBS_SRC := ${GPUAGENT_LIBS}
+AMDSMI_LIBS_SRC_RHEL9 := ${GPUAGENT_LIBS_RHEL9}
+AMDSMI_PKG_DEP :=
+endif
 GPUAGENT_SRIOV_LIBS := ${ASSETS_PATH}/gim_smi_lib/x86_64/${UBUNTU_LIBDIR}/lib
 GPUAGENT_SRIOV_LIBS_RHEL9 := ${ASSETS_PATH}/gim_smi_lib/x86_64/RHEL9/lib
 PROFILER_DEB_LIBS := ${TOP_DIR}/build/assets/${UBUNTU_LIBDIR}/profilerlibs/
@@ -59,6 +82,76 @@ rpmpkg-clean:
 	@rm -rf ${TOP_DIR}/BUILDROOT
 	@rm -rf ${TOP_DIR}/SOURCES
 
+rpmpkg: rpmpkg-clean $(GPUAGENT_PRODUCER_DEP) $(AMDSMI_PKG_DEP)
+	@echo "build rpm package for $(RPM_BUILD_VERSION)-$(RPM_RELEASE_LABEL)"
+	$(if $(EXPORTER_PREBUILT),@echo "amd-metrics-exporter already built by caller; skipping rebuild",${MAKE} amdexporter)
+	# copy to bin folders for tar
+	@mkdir -p ${RPM_PACKAGE_DIR}/bin
+	@mkdir -p ${RPM_PACKAGE_DIR}/lib
+	@mkdir -p ${RPM_PACKAGE_DIR}/share/rocprofiler-sdk
+	# gpuagent + gpuctl source: shared producer build/gpuagent/ when
+	# GPUAGENT_FROM_SOURCE=1 (default), else the committed prebuilt blobs.
+ifeq ($(GPUAGENT_FROM_SOURCE),1)
+	@echo "Staging gpuagent + gpuctl from source producer ${GPUAGENT_BUILD_DIR}"
+	@cp -vf ${GPUAGENT_BUILD_DIR}/gpuagent ${RPM_PACKAGE_DIR}/bin/gpuagent
+	@cp -vf ${GPUAGENT_BUILD_DIR}/gpuctl ${RPM_PACKAGE_DIR}/bin/gpuctl
+else
+	@echo "Staging gpuagent from prebuilt blob; gpuctl from gpuctl.gobin"
+	tar -xf ${ASSETS_PATH}/gpuagent_static.bin.gz -C ${RPM_PACKAGE_DIR}/bin/
+	@cp -vf ${ASSETS_PATH}/gpuctl.gobin ${RPM_PACKAGE_DIR}/bin/gpuctl
+endif
+	@cp -vf $(CURDIR)/bin/amd-metrics-exporter ${RPM_PACKAGE_DIR}/bin/
+	@cp -vf $(CURDIR)/bin/metricsclient ${RPM_PACKAGE_DIR}/bin/
+	@cp -vf $(CURDIR)/bin/amdgpuhealth ${RPM_PACKAGE_DIR}/bin/
+	@cp -vaf ${TOP_DIR}/tools/techsupport/metrics-exporter-ts.sh ${RPM_PACKAGE_DIR}/bin/metrics-exporter-ts.sh
+	# copy libraries (amd_smi from tarball pkglib when AMDSMI_FROM_TARBALL=1,
+	# else committed assets. Copy contents into an explicit lib/ so both sources land the
+	# same regardless of the source dir basename.)
+	@echo "Copy amd_smi libraries from ${AMDSMI_LIBS_SRC_RHEL9}"
+	@mkdir -p ${RPM_PACKAGE_DIR}/lib
+	@cp -rvf ${AMDSMI_LIBS_SRC_RHEL9}/. ${RPM_PACKAGE_DIR}/lib/
+	@if [ ! -d $(PROFILER_RPM_LIBS_RHEL9) ]; then \
+		echo "profiler dependent assets not built, run target libcopy-assets-RHEL9";\
+		exit 1;\
+	fi
+	@echo "Copying profiler dependent libraries form ${PROFILER_RPM_LIBS_RHEL9}"
+	@cp -vaf $(PROFILER_RPM_LIBS_RHEL9)/rocprofilerdeplib/lib* ${RPM_PACKAGE_DIR}/lib/
+	ls -lart ${RPM_PACKAGE_DIR}/lib
+	@echo "Copying rocprofiler client library and binary"
+	@cp -vf ${ROCPROFILER_ASSETS}/librocpclient* ${RPM_PACKAGE_DIR}/lib/
+	@cp -vf ${ROCPROFILER_ASSETS}/rocpctl ${RPM_PACKAGE_DIR}/bin/
+	@cp -vf ${ROCPROFLER_SDK_ASSETS}/* ${RPM_PACKAGE_DIR}/share/rocprofiler-sdk
+	# strip policy: rpm strips EVERYTHING shipped (package size over
+	# in-place symbols). rpm previously stripped nothing; this step is added from
+	# scratch and covers every binary staged into ${RPM_PACKAGE_DIR}/bin.
+	@strip ${RPM_PACKAGE_DIR}/bin/gpuagent
+	@strip ${RPM_PACKAGE_DIR}/bin/gpuctl
+	@strip ${RPM_PACKAGE_DIR}/bin/amd-metrics-exporter
+	@strip ${RPM_PACKAGE_DIR}/bin/metricsclient
+	@strip ${RPM_PACKAGE_DIR}/bin/amdgpuhealth
+	@strip ${RPM_PACKAGE_DIR}/bin/rocpctl
+	#copy default config
+	@jq '.CommonConfig.HealthService.Enable = false | del(.GPUConfig.ExtraPodLabels, .NICConfig, .IFOEConfig)' $(CONFIG_DIR)/config.json > ${RPM_PACKAGE_DIR}/bin/config.json
+	@cat ${RPM_PACKAGE_DIR}/bin/config.json
+	@cp -vaf ${TOP_DIR}/debian ${RPM_PACKAGE_DIR}/
+	@cp -vaf LICENSE ${RPM_PACKAGE_DIR}/
+	@cp -vaf README.md ${RPM_PACKAGE_DIR}/
+	@rm -rf ${RPM_PATH}
+	@mkdir -p ${RPM_PATH}
+	@tar czvf ${RPM_DIR_NAME}.tar.gz ${RPM_DIR_NAME}
+	@mv -vf ${RPM_DIR_NAME}.tar.gz ${RPM_PATH}/
+	@tar czf amdgpu-exporter-$(RPM_BUILD_VERSION)-$(RPM_RELEASE_LABEL).tar.gz ${RPM_DIR_NAME}
+	@mv amdgpu-exporter-$(RPM_BUILD_VERSION)-$(RPM_RELEASE_LABEL).tar.gz ${RPM_PATH}
+	# set the version in the spec file
+	@sed -i "s/RPM_BUILD_VERSION/$(RPM_BUILD_VERSION)/g" rpmbuild/amdgpu-exporter.spec
+	@sed -i "s/RPM_RELEASE_LABEL/$(RPM_RELEASE_LABEL)/g" rpmbuild/amdgpu-exporter.spec
+	@rpmbuild -ba --define "_topdir `pwd`" -v --buildroot `pwd`/BUILDROOT/ \
+		--undefine dist rpmbuild/amdgpu-exporter.spec
+	# revert the dynamic version set file
+	@git checkout rpmbuild/amdgpu-exporter.spec
+	# rename for internal build
+	@mv -v ${TOP_DIR}/RPMS/x86_64/amdgpu-exporter*.x86_64.rpm ${TOP_DIR}/bin/amdgpu-exporter-rhel9.x86_64.rpm
+
 define rpmpkg-stage-common
 	@mkdir -p $(RPM_STAGE_DIR)/bin $(RPM_STAGE_DIR)/lib $(RPM_STAGE_DIR)/share/rocprofiler-sdk
 	tar -xf $(RPM_GPUAGENT_BIN) -C $(RPM_STAGE_DIR)/bin/
@@ -96,34 +189,37 @@ define rpmpkg-finalize
 	@mv -v ${TOP_DIR}/RPMS/x86_64/$(RPM_OUTPUT_GLOB) ${TOP_DIR}/bin/$(RPM_OUTPUT_FILE)
 endef
 
-rpmpkg: RPM_STAGE_DIR    = ${RPM_PACKAGE_DIR}
-rpmpkg: RPM_GPUAGENT_BIN = ${ASSETS_PATH}/gpuagent_static.bin.gz
-rpmpkg: RPM_GPUCTL_BIN   = ${ASSETS_PATH}/gpuctl.gobin
-rpmpkg: RPM_JQ_FILTER    = .CommonConfig.HealthService.Enable = false | del(.GPUConfig.ExtraPodLabels, .NICConfig, .IFOEConfig)
-rpmpkg: RPM_DIR_LABEL    = ${RPM_DIR_NAME}
-rpmpkg: RPM_BUILD_DEFINES =
-rpmpkg: RPM_OUTPUT_GLOB  = amdgpu-exporter*.x86_64.rpm
-rpmpkg: RPM_OUTPUT_FILE  = amdgpu-exporter-rhel9.x86_64.rpm
-rpmpkg: rpmpkg-clean
-	@echo "build rpm package for $(RPM_BUILD_VERSION)-$(RPM_RELEASE_LABEL)"
-	${MAKE} amdexporter
-	$(rpmpkg-stage-common)
-	$(rpmpkg-finalize)
-
-rpmpkg-sriov: rpmpkg-clean
+rpmpkg-sriov: rpmpkg-clean $(GPUAGENT_PRODUCER_DEP)
 	@echo "build rpm sriov package for $(RPM_SRIOV_BUILD_VERSION)-$(RPM_SRIOV_RELEASE_LABEL)"
-	${MAKE} amdexporter
+	$(if $(EXPORTER_PREBUILT),@echo "amd-metrics-exporter already built by caller; skipping rebuild",${MAKE} amdexporter)
 	# copy to bin folders for tar
 	@mkdir -p ${RPM_PACKAGE_SRIOV_DIR}/bin
 	@mkdir -p ${RPM_PACKAGE_SRIOV_DIR}/lib
 	@mkdir -p ${PKG_SRIOV_LUA_PATH}
+	# SR-IOV gpuagent source: shared producer gpuagent_gim when
+	# GPUAGENT_FROM_SOURCE=1 (default), else the committed sriov blob.
+	# TODO: verify gpuagent_gim is functionally equivalent to today's
+	# assets/gpuagent_sriov_static.bin.gz before this is the sole SR-IOV path.
+ifeq ($(GPUAGENT_FROM_SOURCE),1)
+	@echo "Staging gpuagent_gim from source producer ${GPUAGENT_BUILD_DIR}"
+	@cp -vf ${GPUAGENT_BUILD_DIR}/gpuagent_gim ${RPM_PACKAGE_SRIOV_DIR}/bin/gpuagent-sriov
+else
+	@echo "Staging gpuagent-sriov from prebuilt blob"
 	tar -xf ${ASSETS_PATH}/gpuagent_sriov_static.bin.gz -C ${RPM_PACKAGE_SRIOV_DIR}/bin/
 	@mv -vf ${RPM_PACKAGE_SRIOV_DIR}/bin/gpuagent ${RPM_PACKAGE_SRIOV_DIR}/bin/gpuagent-sriov
+endif
 	@cp -vaf ${TOP_DIR}/tools/techsupport/metrics-exporter-ts.sh ${RPM_PACKAGE_SRIOV_DIR}/bin/metrics-exporter-ts.sh
 	@cp -vf ${ASSETS_PATH}/gpuctl.gobin ${RPM_PACKAGE_SRIOV_DIR}/bin/gpuctl
 	@cp -vf $(CURDIR)/bin/amd-metrics-exporter ${RPM_PACKAGE_SRIOV_DIR}/bin/amd-metrics-exporter-sriov
 	@cp -vf $(CURDIR)/bin/metricsclient ${RPM_PACKAGE_SRIOV_DIR}/bin/
 	@cp -vf $(CURDIR)/bin/amdgpuhealth ${RPM_PACKAGE_SRIOV_DIR}/bin/
+	# strip policy: sriov rpm strips EVERYTHING shipped (rpm previously
+	# stripped nothing; step added from scratch). No rocpctl in the sriov package.
+	@strip ${RPM_PACKAGE_SRIOV_DIR}/bin/gpuagent-sriov
+	@strip ${RPM_PACKAGE_SRIOV_DIR}/bin/gpuctl
+	@strip ${RPM_PACKAGE_SRIOV_DIR}/bin/amd-metrics-exporter-sriov
+	@strip ${RPM_PACKAGE_SRIOV_DIR}/bin/metricsclient
+	@strip ${RPM_PACKAGE_SRIOV_DIR}/bin/amdgpuhealth
 	@cp -rvf  ${PKG_LUA_PATH}/ ${PKG_SRIOV_LUA_PATH}/../
 	@cp -vf ${LIB_CONF_PATH} ${PKG_SRIOV_LUA_PATH}/../
 	@cp -vf ${LUA_PROTO} ${PKG_SRIOV_LUA_PATH}/plugin.proto
@@ -186,36 +282,53 @@ rpmpkg-ual: rpmpkg-ual-clean
 		$(RPM_STAGE_DIR)/debian/usr/lib/systemd/system/amd-metrics-exporter.service
 	$(rpmpkg-finalize)
 
+# Clean only THIS ubuntu version's .deb (not a bare amdgpu-exporter*.deb glob), so
+# building ub22 then ub24 in a single `make docker` invocation does not wipe the
+# ub22 output when the ub24 sub-make cleans. $(UBUNTU_VERSION_NUMBER) is 22.04 or
+# 24.04 per the UBUNTU_VERSION (jammy/noble) selection in the root Makefile.
 debpkg-clean:
-	rm -rf ${TOP_DIR}/bin/amdgpu-exporter*.deb
+	rm -rf ${TOP_DIR}/bin/amdgpu-exporter_$(UBUNTU_VERSION_NUMBER)_*.deb
 	rm -rf ${PKG_LIB_PATH} ${PKG_PATH}
 
 debpkg-sriov-clean:
-	rm -rf ${TOP_DIR}/bin/amdgpu-exporter-sriov*.deb
-	rm -rf ${PKG_SRIOV_PATH} ${PKG_SRIOV_LOCAL_PATH}
+	rm -rf ${TOP_DIR}/bin/amdgpu-exporter-sriov_$(UBUNTU_VERSION_NUMBER)_*.deb
+	# Narrow per-step staging dirs only; do NOT wipe debian-sriov/usr/local
+	# wholesale because that path now contains the git-tracked
+	# usr/local/etc/metrics/gpuagent.conf EnvironmentFile.
+	rm -rf ${PKG_SRIOV_PATH} ${PKG_SRIOV_LIB_PATH} ${PKG_SRIOV_LUA_PATH} ${METRICS_SRIOV_CONF_DIR}
 
-debpkg: debpkg-clean
-	${MAKE} amdexporter
-	@echo "Building debian package for $(BUILD_VER_ENV)"
+debpkg: debpkg-clean $(GPUAGENT_PRODUCER_DEP) $(AMDSMI_PKG_DEP)
+	$(if $(EXPORTER_PREBUILT),@echo "amd-metrics-exporter already built by caller; skipping rebuild",${MAKE} amdexporter)
+	@echo "Building debian for $(BUILD_VER_ENV)"
 	@echo "library assets build path $(PROFILER_DEB_LIBS)"
 	@mkdir -p ${PKG_LIB_PATH}
 	@mkdir -p ${METRICS_CONF_PATH}
 	@mkdir -p ${PKG_PATH}
 	@mkdir -p ${SDK_COUNTER_DEF}
-	@echo "Copying prebuilt gpuagent"
+	# gpuagent source: shared producer build/gpuagent/gpuagent when
+	# GPUAGENT_FROM_SOURCE=1 (default), else the committed prebuilt blob.
 ifeq ($(filter $(UAL),1 true),)
-	@echo "using standard gpuagent"
+ifeq ($(GPUAGENT_FROM_SOURCE),1)
+	@echo "Staging gpuagent from source producer ${GPUAGENT_BUILD_DIR}"
+	@cp -vf ${GPUAGENT_BUILD_DIR}/gpuagent ${PKG_PATH}/gpuagent
+else
+	@echo "Copying prebuilt gpuagent"
 	@tar -xf ${ASSETS_PATH}/gpuagent_static.bin.gz -C ${PKG_PATH}/
-	@cp -vf ${ASSETS_PATH}/gpuctl.gobin ${PKG_PATH}/gpuctl
+endif
 	@jq '.CommonConfig.HealthService.Enable = false | del(.GPUConfig.ExtraPodLabels, .NICConfig, .IFOEConfig)' $(CONFIG_DIR)/config.json > ${METRICS_CONF_PATH}/config.json
 else
 	@echo "using UAL-specific gpuagent"
 	@tar -xf ${ASSETS_PATH}/gpuagent_ual.bin.gz -C ${PKG_PATH}/
-	@cp -vf ${ASSETS_PATH}/gpuctl_ual ${PKG_PATH}/gpuctl
 	@jq '.CommonConfig.HealthService.Enable = false | del(.GPUConfig.ExtraPodLabels, .NICConfig)' $(CONFIG_DIR)/config.json > ${METRICS_CONF_PATH}/config.json
 endif
-	@echo "Copy prebuilt libraries"
-	@cp -rvf ${GPUAGENT_LIBS}/ ${PKG_LIB_PATH}
+	@mkdir -p ${PKG_LIB_PATH}/lib
+ifeq ($(filter $(UAL),1 true),)
+	@echo "Copy amd_smi libraries from ${AMDSMI_LIBS_SRC}"
+	@cp -rvf ${AMDSMI_LIBS_SRC}/. ${PKG_LIB_PATH}/lib/
+else
+	@echo "Copy prebuilt amd_smi libraries (UAL) from ${GPUAGENT_LIBS}"
+	@cp -rvf ${GPUAGENT_LIBS}/. ${PKG_LIB_PATH}/lib/
+endif
 	@if [ ! -d $(PROFILER_DEB_LIBS) ]; then \
 		echo "profiler dependent assets not built, run target libcopy-assets-${UBUNTU_LIBDIR}";\
 		exit 1;\
@@ -238,17 +351,29 @@ endif
 	@ls -alsh ${PKG_PATH}/gpuagent
 	@chmod +x ${PKG_PATH}/rocpctl
 	@ls -alsh ${PKG_PATH}/rocpctl
-	#strip prebuilt binaries
+	# strip policy (deb strips everything shipped). Single strip of
+	# gpuagent (the prior redundant double-strip was collapsed to one).
 	@strip ${PKG_PATH}/gpuagent
 	@strip ${PKG_PATH}/rocpctl
 	@ls -alsh ${PKG_PATH}/gpuagent
 	@ls -alsh ${PKG_PATH}/rocpctl
-	@cd ${PKG_PATH} && strip ${PKG_PATH}/gpuagent
 	@cp -vf ${LUA_PROTO} ${PKG_LUA_PATH}/plugin.proto
+ifeq ($(filter $(UAL),1 true),)
+ifeq ($(GPUAGENT_FROM_SOURCE),1)
+	@cp -vf ${GPUAGENT_BUILD_DIR}/gpuctl ${PKG_PATH}/gpuctl
+else
+	@cp -vf ${ASSETS_PATH}/gpuctl.gobin ${PKG_PATH}/gpuctl
+endif
+	@strip ${PKG_PATH}/gpuctl
+else
+	@cp -vf ${ASSETS_PATH}/gpuctl_ual ${PKG_PATH}/gpuctl
+endif
 	@cp -vf $(CURDIR)/bin/amd-metrics-exporter ${PKG_PATH}/
 	@strip ${PKG_PATH}/amd-metrics-exporter
 	@cp -vf $(CURDIR)/bin/metricsclient ${PKG_PATH}/
+	@strip ${PKG_PATH}/metricsclient
 	@cp -vf $(CURDIR)/bin/amdgpuhealth ${PKG_PATH}/
+	@strip ${PKG_PATH}/amdgpuhealth
 	@cd ${TOP_DIR}
 	@sed -i "s/BUILD_VER_ENV/$(BUILD_VER_ENV)/g" $(DEBIAN_CONTROL)
 	@dpkg-deb -Zxz --build debian ${TOP_DIR}/bin
@@ -272,21 +397,31 @@ debpkg-ual:
 	@sed -i 's|^Package: amdgpu-exporter$$|Package: amdgpuifoe-exporter|' ${TOP_DIR}/debian/DEBIAN/control
 	@echo "Setting PLATFORM=helios in gpuagent.conf"
 	@echo "PLATFORM=helios" >> ${LIB_CONF_PATH}
-	@$(MAKE) debpkg UAL=true
+	@$(MAKE) debpkg UAL=true GPUAGENT_FROM_SOURCE=0 AMDSMI_FROM_TARBALL=0
 	@echo "Reverting systemd service file modifications"
 	@git checkout ${TOP_DIR}/debian/usr/lib/systemd/system/amd-metrics-exporter.service
 	@echo "Reverting gpuagent.conf modifications"
 	@git checkout ${LIB_CONF_PATH}
 
-debpkg-sriov: debpkg-sriov-clean
-	${MAKE} amdexporter
+debpkg-sriov: debpkg-sriov-clean $(GPUAGENT_PRODUCER_DEP)
+	$(if $(EXPORTER_PREBUILT),@echo "amd-metrics-exporter already built by caller; skipping rebuild",${MAKE} amdexporter)
 	@echo "Building sriov debian for $(BUILD_SRIOV_VER_ENV)"
 	@mkdir -p ${PKG_SRIOV_LIB_PATH}
 	@mkdir -p ${METRICS_SRIOV_CONF_PATH}
 	@mkdir -p ${PKG_SRIOV_PATH}
 	@mkdir -p ${PKG_SRIOV_LUA_PATH}
+	# SR-IOV gpuagent source: shared producer gpuagent_gim when
+	# GPUAGENT_FROM_SOURCE=1 (default), else the committed sriov blob. Staged as
+	# ${PKG_SRIOV_PATH}/gpuagent; renamed to gpuagent-sriov after the strip step.
+	# TODO: verify gpuagent_gim is functionally equivalent to today's
+	# assets/gpuagent_sriov_static.bin.gz before this is the sole SR-IOV path.
+ifeq ($(GPUAGENT_FROM_SOURCE),1)
+	@echo "Staging gpuagent_gim from source producer ${GPUAGENT_BUILD_DIR}"
+	@cp -vf ${GPUAGENT_BUILD_DIR}/gpuagent_gim ${PKG_SRIOV_PATH}/gpuagent
+else
 	@echo "Copying prebuilt gpuagent"
 	@tar -xf ${ASSETS_PATH}/gpuagent_sriov_static.bin.gz -C ${PKG_SRIOV_PATH}/
+endif
 	@echo "Copy prebuilt libraries"
 	@cp -rvf ${GPUAGENT_SRIOV_LIBS}/ ${PKG_SRIOV_LIB_PATH}
 	# gpuagent-sriov has DT_NEEDED libamdsmi.so (the gim lib's soname); provide that filename so the loader resolves it from LD_LIBRARY_PATH
@@ -305,17 +440,24 @@ debpkg-sriov: debpkg-sriov-clean
 	#copy and strip files
 	@chmod +x ${PKG_SRIOV_PATH}/gpuagent
 	@ls -alsh ${PKG_SRIOV_PATH}/gpuagent
-	#strip prebuilt binaries
+	# strip policy (sriov deb strips everything shipped). Single strip
+	# of gpuagent (the prior redundant double-strip was collapsed to one).
 	@strip ${PKG_SRIOV_PATH}/gpuagent
 	@mv -vf ${PKG_SRIOV_PATH}/gpuagent ${PKG_SRIOV_PATH}/gpuagent-sriov
 	@ls -alsh ${PKG_SRIOV_PATH}/gpuagent-sriov
-	@cd ${PKG_SRIOV_PATH} && strip ${PKG_SRIOV_PATH}/gpuagent-sriov
 	@cp -vf ${LUA_PROTO} ${PKG_SRIOV_LUA_PATH}/plugin.proto
+ifeq ($(GPUAGENT_FROM_SOURCE),1)
+	@cp -vf ${GPUAGENT_BUILD_DIR}/gpuctl ${PKG_SRIOV_PATH}/gpuctl
+else
 	@cp -vf ${ASSETS_PATH}/gpuctl.gobin ${PKG_SRIOV_PATH}/gpuctl
+endif
+	@strip ${PKG_SRIOV_PATH}/gpuctl
 	@cp -vf $(CURDIR)/bin/amd-metrics-exporter ${PKG_SRIOV_PATH}/amd-metrics-exporter-sriov
 	@strip ${PKG_SRIOV_PATH}/amd-metrics-exporter-sriov
 	@cp -vf $(CURDIR)/bin/metricsclient ${PKG_SRIOV_PATH}/
+	@strip ${PKG_SRIOV_PATH}/metricsclient
 	@cp -vf $(CURDIR)/bin/amdgpuhealth ${PKG_SRIOV_PATH}/
+	@strip ${PKG_SRIOV_PATH}/amdgpuhealth
 	@cd ${TOP_DIR}
 	@sed -i "s/BUILD_VER_ENV/$(BUILD_SRIOV_VER_ENV)/g" $(DEBIAN_SRIOV_CONTROL)
 	@dpkg-deb -Zxz --build debian-sriov ${TOP_DIR}/bin
@@ -330,7 +472,7 @@ debpkg-sriov: debpkg-sriov-clean
 	@mv -vf ${TOP_DIR}/bin/amdgpu-exporter-sriov_*~${UBUNTU_VERSION_NUMBER}_amd64.deb ${TOP_DIR}/bin/amdgpu-exporter-sriov_${UBUNTU_VERSION_NUMBER}_amd64.deb
 
 nic-debpkg: nic-debpkg-clean
-	${MAKE} amdexporter
+	$(if $(EXPORTER_PREBUILT),@echo "amd-metrics-exporter already built by caller; skipping rebuild",${MAKE} amdexporter)
 	@echo "Building debian package for $(BUILD_VER_ENV)"
 
 	# Ensure directories exist

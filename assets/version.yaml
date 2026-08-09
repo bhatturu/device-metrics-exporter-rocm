@@ -20,16 +20,15 @@ assets:
     branch  : feature/collab-2.0.0-amdsmi-npi
 
   - name    : amd_smi_lib
-    version : "420a15a4"
-    repo    : ROCm/rocm-systems
-    branch  : develop
+    version : "10.0.0a20260730"
+    branch  : release/therock-10.0
 
   - name    : rocprofiler
-    version : 7.2
-    branch  : release/rocm-rel-7.2
+    version : "10.0.0a20260730"
+    branch  : release/therock-10.0
 
   - name    : profiler_lib
-    version : 7.2
+    version : "10.0.0a20260730"
 
   - name    : gpuagent_ual.bin.gz
     version : 1.133.0-29

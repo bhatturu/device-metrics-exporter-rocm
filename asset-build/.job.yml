@@ -8,18 +8,12 @@ targets:
     sub-area:
     feature:
     build-dependencies:
-    - build-debian-package-ub22.04
-    - build-debian-package-ub24.04
-    - build-device-metrics-exporter-docker-ubi9.6
-    #- build-device-metrics-exporter-docker-sriov-ubi9.6
+    - build-device-metrics-exporter-gpu
     #- build-device-metrics-exporter-docker-ainic-ubi9.6
-    - build-rpm-package-rhel9
     #- build-helm-gpu-artifact
     #- build-helm-nic-artifact
     #- e2e-build-mock-exporter
     #- build-nic-debian-package
-    - build-ifoe-debian-package-ub22.04
-    - build-ifoe-debian-package-ub24.04
 
     # copy-test-runner-artifacts:
     #   commands: [ "sh", "-c", "pwd && cd ./asset-build && ./test-runner-asset-push.sh" ]

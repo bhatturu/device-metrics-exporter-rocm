@@ -27,14 +27,38 @@ if [ "$AINIC" = "1" ]; then
     exit 0
 fi
 
+# gpuagent source model: with GPUAGENT_FROM_SOURCE=1 (default) all
+# targets consume the shared producer's binaries from GPUAGENT_BUILD_DIR
+# (build/gpuagent/, built once per make invocation via `make gpuagent-build`).
+# With GPUAGENT_FROM_SOURCE=0 each target falls back to its committed
+# assets/gpuagent_*.bin.gz prebuilt blob (escape hatch).
+GPUAGENT_FROM_SOURCE="${GPUAGENT_FROM_SOURCE:-1}"
+GPUAGENT_BUILD_DIR="${GPUAGENT_BUILD_DIR:-$TOP_DIR/build/gpuagent}"
+
 # copy all artificats and set proper file permissions
 if [ "$MOCK" == "1" ]; then
-    tar -xf $TOP_DIR/assets/gpuagent_mock.bin.gz -C $TOP_DIR/docker/
+    if [ "$GPUAGENT_FROM_SOURCE" == "1" ]; then
+        echo "Staging gpuagent_mock from source producer ($GPUAGENT_BUILD_DIR)"
+        cp -vf "$GPUAGENT_BUILD_DIR/gpuagent_mock" "$TOP_DIR/docker/gpuagent"
+    else
+        echo "Staging gpuagent_mock from prebuilt asset blob"
+        tar -xf "$TOP_DIR/assets/gpuagent_mock.bin.gz" -C "$TOP_DIR/docker/"
+    fi
     ln -f $TOP_DIR/bin/rocpctl-mock $TOP_DIR/docker/rocpctl-mock
     chmod +x $TOP_DIR/docker/gpuagent
 elif [ "$SRIOV" == "1" ]; then
-    echo "Copying sriov gim driver gpuagent to docker"
-    tar -xf $TOP_DIR/assets/gpuagent_sriov_static.bin.gz -C $TOP_DIR/docker/
+    if [ "$GPUAGENT_FROM_SOURCE" == "1" ]; then
+        # SR-IOV consumes gpuagent_gim from the shared producer.
+        # TODO: verify gpuagent_gim is functionally equivalent to
+        # today's assets/gpuagent_sriov_static.bin.gz before this becomes the
+        # sole SR-IOV path (design "gpuagent_gim equivalence check"). Until then
+        # GPUAGENT_FROM_SOURCE=0 restores the proven prebuilt sriov blob.
+        echo "Staging gpuagent_gim from source producer ($GPUAGENT_BUILD_DIR)"
+        cp -vf "$GPUAGENT_BUILD_DIR/gpuagent_gim" "$TOP_DIR/docker/gpuagent"
+    else
+        echo "Staging sriov gim driver gpuagent from prebuilt asset blob"
+        tar -xf "$TOP_DIR/assets/gpuagent_sriov_static.bin.gz" -C "$TOP_DIR/docker/"
+    fi
     chmod +x $TOP_DIR/docker/gpuagent
 else
     # collab-2.0.0: UAL prebuilt is the default release path (GPUOP-723).
@@ -48,6 +72,10 @@ else
         echo "Copying UAL/IFOE prebuilt gpuagent to docker (GPUOP-723 default; UAL=1)"
         tar -xf $TOP_DIR/assets/gpuagent_ual.bin.gz -C $TOP_DIR/docker/
         cp -vf $TOP_DIR/assets/gpuctl_ual $TOP_DIR/docker/gpuctl
+    elif [ "$GPUAGENT_FROM_SOURCE" == "1" ]; then
+        echo "Staging non-IFOE gpuagent + gpuctl from source producer ($GPUAGENT_BUILD_DIR)"
+        cp -vf "$GPUAGENT_BUILD_DIR/gpuagent" "$TOP_DIR/docker/gpuagent"
+        cp -vf "$GPUAGENT_BUILD_DIR/gpuctl" "$TOP_DIR/docker/gpuctl"
     else
         echo "Copying non-IFOE prebuilt gpuagent to docker (UAL=$UAL)"
         tar -xf $TOP_DIR/assets/gpuagent_static.bin.gz -C $TOP_DIR/docker/

@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 ARG BUILD_BASE_IMAGE=ubuntu:22.04
 
 FROM ${BUILD_BASE_IMAGE}
@@ -27,6 +28,28 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
   libmnl-dev libnl-3-dev libnl-genl-3-dev \
   hip-runtime-amd && \
   apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ADD docker/install-rocm-tarball.sh /usr/local/bin/install-rocm-tarball.sh
+RUN chmod +x /usr/local/bin/install-rocm-tarball.sh
+
+# tarball data bind-mounted from the `rocm-tarball` context (downloaded
+# once on host); install script reads the local file. wget stays for the else-branch
+# rocm.gpg key fetch only.
+RUN --mount=type=bind,from=rocm-tarball,source=therock.tar.gz,target=/tmp/rocm.tar.gz \
+   if [ -n "${ROCM_TARBALL_URL}" ]; then \
+      /usr/local/bin/install-rocm-tarball.sh "${ROCM_VERSION}" /tmp/rocm.tar.gz /usr/lib/x86_64-linux-gnu; \
+   else \
+      mkdir --parents --mode=0755 /etc/apt/keyrings && \
+      mkdir --parents --mode=0755 /etc/apt/preferences.d && \
+      wget https://repo.radeon.com/rocm/rocm.gpg.key -O - | gpg --dearmor --yes -o /etc/apt/keyrings/rocm.gpg && \
+      sh -c 'echo deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] http://repo.radeon.com/rocm/apt/$ROCM_VERSION/ jammy main > /etc/apt/sources.list.d/rocm.list' && \
+      sh -c 'echo deb [arch=amd64 signed-by=/etc/apt/keyrings/rocm.gpg] https://repo.radeon.com/graphics/$AMDGPU_VERSION/ubuntu jammy main > /etc/apt/sources.list.d/amdgpu.list' && \
+      sh -c 'echo "Package: *\nPin: release o=repo.radeon.com\nPin-Priority: 600\n" | tee /etc/apt/preferences.d/rocm-pin-600' && \
+      apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+         sudo libelf1 build-essential \
+         hsa-amd-aqlprofile rocprofiler-sdk hip-runtime-amd && \
+      apt-get clean && rm -rf /var/lib/apt/lists/*; \
+   fi
 
 # libatomic1: librocprofiler-sdk.so runtime dep, for entrypoint.sh to bundle.
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \

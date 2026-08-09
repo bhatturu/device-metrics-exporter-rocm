@@ -1,44 +1,6 @@
 ---
 version: 2.0
 builds:
-  build-debian-package-ub22.04:
-    commands: [ "/bin/sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter && make libcopy-assets-UBUNTU22 debpkg debpkg-sriov"]
-    owners: ["email:prshanmug@amd.com"]
-    area:
-    sub-area:
-    feature:
-    artifacts:
-        - /device-metrics-exporter/bin/amdgpu-exporter_22.04_amd64.deb
-        - /device-metrics-exporter/bin/amdgpu-exporter-sriov_22.04_amd64.deb
-
-  build-debian-package-ub24.04:
-    commands: [ "/bin/sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter && make UBUNTU_VERSION=noble libcopy-assets-UBUNTU24 debpkg debpkg-sriov"]
-    owners: ["email:prshanmug@amd.com"]
-    area:
-    sub-area:
-    feature:
-    artifacts:
-        - /device-metrics-exporter/bin/amdgpu-exporter_24.04_amd64.deb
-        - /device-metrics-exporter/bin/amdgpu-exporter-sriov_24.04_amd64.deb
-
-  build-ifoe-debian-package-ub22.04:
-    commands: [ "/bin/sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter && make libcopy-assets-UBUNTU22 debpkg-ual"]
-    owners: ["email:prshanmug@amd.com"]
-    area:
-    sub-area:
-    feature:
-    artifacts:
-        - /device-metrics-exporter/bin/amdgpuifoe-exporter_22.04_amd64.deb
-
-  build-ifoe-debian-package-ub24.04:
-    commands: [ "/bin/sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter && make UBUNTU_VERSION=noble libcopy-assets-UBUNTU24 debpkg-ual"]
-    owners: ["email:prshanmug@amd.com"]
-    area:
-    sub-area:
-    feature:
-    artifacts:
-        - /device-metrics-exporter/bin/amdgpuifoe-exporter_24.04_amd64.deb
-
   build-nic-debian-package:
     commands: [ "/bin/sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter && make nic-debpkg"]
     owners: ["email:yshankar@amd.com"]
@@ -46,34 +8,30 @@ builds:
         - /device-metrics-exporter/bin/amdnic-exporter_22.04_amd64.deb
         - /device-metrics-exporter/bin/amdnic-exporter_24.04_amd64.deb
 
-  build-rpm-package-rhel9:
-    commands: [ "/bin/sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter && make libcopy-assets-RHEL9 rpmpkg rpmpkg-sriov rpmpkg-ual"]
-    owners: ["email:prshanmug@amd.com"]
-    area:
-    sub-area:
-    feature:
-    artifacts:
-        - /device-metrics-exporter/bin/amdgpu-exporter-rhel9.x86_64.rpm
-        - /device-metrics-exporter/bin/amdgpu-exporter-sriov-rhel9.x86_64.rpm
-        - /device-metrics-exporter/bin/amdgpuifoe-exporter-rhel9.x86_64.rpm
-
-  build-device-metrics-exporter-docker-sriov-ubi9.6:
-    commands: ["sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter && make all && \
-                            HOURLY_TAG_LABEL=$RELEASE EXPORTER_IMAGE_TAG=latest make docker-sriov"]
-    owners: ["email:prshanmug@amd.com"]
-    artifacts:
-        - /device-metrics-exporter/docker/device-metrics-exporter-sriov-latest.tar.gz
-
-  build-device-metrics-exporter-docker-ubi9.6:
-    commands: ["sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter && make all && \
-                            HOURLY_TAG_LABEL=$RELEASE EXPORTER_IMAGE_TAG=latest make docker-cicd"]
+  # `make docker` builds both exporter images (non-SR-IOV + SR-IOV) AND all gpu
+  # deb (Ubuntu 22/24) + rpm (RHEL9) packages, non-SR-IOV + SR-IOV, in one target.
+  # The former separate build-debian-package-ub22.04 / -ub24.04 / build-rpm-package-rhel9
+  # jobs are folded in here. (NIC deb stays separate — not produced by make docker.)
+  build-device-metrics-exporter-gpu:
+    commands: ["sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter && \
+                            HOURLY_TAG_LABEL=$RELEASE EXPORTER_IMAGE_TAG=latest make docker"]
     owners: ["email:prshanmug@amd.com"]
     artifacts:
         - /device-metrics-exporter/docker/device-metrics-exporter-latest.tar.gz
+        - /device-metrics-exporter/docker/device-metrics-exporter-sriov-latest.tar.gz
+        - /device-metrics-exporter/bin/amdgpu-exporter_22.04_amd64.deb
+        - /device-metrics-exporter/bin/amdgpu-exporter-sriov_22.04_amd64.deb
+        - /device-metrics-exporter/bin/amdgpu-exporter_24.04_amd64.deb
+        - /device-metrics-exporter/bin/amdgpu-exporter-sriov_24.04_amd64.deb
+        - /device-metrics-exporter/bin/amdgpu-exporter-rhel9.x86_64.rpm
+        - /device-metrics-exporter/bin/amdgpu-exporter-sriov-rhel9.x86_64.rpm
+        - /device-metrics-exporter/bin/amdgpuifoe-exporter_22.04_amd64.deb
+        - /device-metrics-exporter/bin/amdgpuifoe-exporter_24.04_amd64.deb
+        - /device-metrics-exporter/bin/amdgpuifoe-exporter-rhel9.x86_64.rpm
         - /device-metrics-exporter/tools/techsupport_dump.sh
 
   build-device-metrics-exporter-docker-ainic-ubi9.6:
-    commands: ["sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter && make all && \
+    commands: ["sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter && \
                             HOURLY_TAG_LABEL=$RELEASE EXPORTER_IMAGE_TAG=latest make docker-ainic"]
     owners: ["email:sgurunat@amd.com"]
     artifacts:
@@ -144,13 +102,9 @@ targets:
     build-dependencies:
         #- build-helm-gpu-artifact
         #- build-helm-nic-artifact
-        - build-debian-package-ub22.04
-        - build-debian-package-ub24.04
-        - build-rpm-package-rhel9
+        - build-device-metrics-exporter-gpu
         - e2e-build-mock-exporter
         #- build-nic-debian-package
-        - build-ifoe-debian-package-ub22.04
-        - build-ifoe-debian-package-ub24.04
 
     # test-runner-sanity:
     #   commands: ["/bin/sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter"]
@@ -173,9 +127,8 @@ targets:
     logfiles:
         - /device-metrics-exporter/exporter-build.log
     build-dependencies:
-        - build-device-metrics-exporter-docker-ubi9.6
+        - build-device-metrics-exporter-gpu
         - build-device-metrics-exporter-docker-ainic-ubi9.6
-        - build-device-metrics-exporter-docker-sriov-ubi9.6
 
   test-runner-sanity:
     commands: [ "/bin/sh", "-c", "cd /usr/src/github.com/ROCm/device-metrics-exporter"]
